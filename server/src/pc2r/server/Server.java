@@ -4,10 +4,17 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.IOException;
 
+import pc2r.commands.CommandParser;
+import pc2r.game.GameState;
+
 public class Server extends Thread {
     protected ServerSocket sc;
+    private CommandParser parser;
+    private GameState state;
 
     public Server(int port) {
+        state = new GameState();
+        parser = new CommandParser(state);
         try {
             sc = new ServerSocket(port);
         } catch (IOException e) {
@@ -21,7 +28,7 @@ public class Server extends Thread {
         try {
             while(true) {
                 Socket client = sc.accept();
-                Connexion c = new Connexion(client);
+                Client c = new Client(client, parser);
             }
         } catch(IOException e) {
             System.err.println(e.getMessage());
