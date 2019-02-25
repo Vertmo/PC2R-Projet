@@ -1,6 +1,6 @@
-(******************************************************************************)
-(*                           Connection to server                             *)
-(******************************************************************************)
+(*******************************************************************************)
+(*                           Connection to server                              *)
+(*******************************************************************************)
 
 exception Quit
 
@@ -12,8 +12,16 @@ let my_input_line fd =
   done;
   !r
 
+(** Listens to the server *)
+let listen_server s = try
+    while true do
+      let msg = my_input_line s in
+      print_endline msg
+    done
+  with Quit -> ()
+
 (** Handle an established connection *)
-let handle_connection s _ = try
+let handle_connection s = try
     while true do
       let si = (read_line ())^"\n" in
       ignore (Unix.write s (Bytes.of_string si) 0 (String.length si));
@@ -29,5 +37,13 @@ let start serv port =
   let h_addr = host.Unix.h_addr_list.(0) in
   let sock_addr = Unix.ADDR_INET(h_addr,port) in
   Unix.connect sock sock_addr;
-  handle_connection sock sock_addr;
-  Unix.close sock
+  let _ = (Thread.create listen_server sock) in
+  sock
+
+(** Close the connection *)
+let close = Unix.close
+
+(** Send a command to the server *)
+let send s cmd =
+  let msg = (Protocol.string_of_clientcmd cmd)^"\n" in
+  ignore (Unix.write s (Bytes.of_string msg) 0 (String.length msg))
