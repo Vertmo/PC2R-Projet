@@ -1,2 +1,3 @@
 (executable
-  (name pc2rClient))
+  (name pc2rClient)
+  (libraries unix))

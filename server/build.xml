@@ -23,10 +23,10 @@
     <javac debug="true" srcdir="${src}" excludes="" destdir="${build}" includeantruntime="false" />
   </target>
 
-  <target name="run" depends="compile"
-          description="run examples">
-    <!--<echo>================ Run the main ================</echo>-->
+  <target name="run" depends="compile" description="run examples">
+    <!--<echo>================ Start the server ===============</echo>-->
     <java classname="pc2r.server.Server" classpath="${build}">
+      <arg value="45678" />
     </java>
   </target>
 
