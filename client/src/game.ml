@@ -11,6 +11,9 @@ let turnit = 0.2 and thrustit = 0.2
 (** Phase: attente or jeu *)
 type phase = Attente | Jeu
 
+let phase_of_string = function
+  | "attente" -> Attente | "jeu" -> Jeu | _ -> failwith "Unknown phase"
+
 (** Player state (coordinates, speed and score) *)
 type playerState = {
   mutable username: string;

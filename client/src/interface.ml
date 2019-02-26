@@ -39,7 +39,7 @@ let draw_background () =
 
 (** Draw the loading screen *)
 let draw_loading _ =
-  set_color (rgb 155 155 0);
+  set_color (rgb 0 200 200);
   draw_segments [|(w/2, 4*h/3, 3*w/2, 4*h/3);
                   (w/2, 4*h/3-50, 3*w/2, 4*h/3-50)|];
   set_text_size 50; (* It unfortunally is not implemented yet... *)
@@ -85,29 +85,38 @@ let draw_other_players coords =
 (** Draw the target *)
 let draw_target (x, y) =
   set_color green;
-  fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 10
+  fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 20
 
-(** Graphic thread *)
-let graph_thread refresh_tickrate =
+(** Graphic thread;
+    `terminator` allows us to gracefully close the client *)
+let graph_thread (refresh_tickrate, terminator) =
   start_graph ();
-  while true do
-    draw_background ();
-    if(state.phase = Attente) then draw_loading ()
-    else (
-      (* Drawing *)
-      draw_other_players state.coords;
-      draw_target state.objCoord;
-      draw_player (state.player.coord) (state.player.angle);
-    );
-    synchronize ();
-    Thread.delay (1./.(float_of_int refresh_tickrate))
-  done
+  try
+    while true do
+      draw_background ();
+      if(state.phase = Attente) then draw_loading ()
+      else (
+        (* Drawing *)
+        draw_other_players state.coords;
+        draw_target state.objCoord;
+        draw_player (state.player.coord) (state.player.angle);
+      );
+      synchronize ();
+      Thread.delay (1./.(float_of_int refresh_tickrate))
+    done
+  (* The graphics window was closed *)
+  with Graphic_failure _ -> terminator ()
 
-(** Key presses thread, handles action from the user *)
-let key_thread () =
-  while true do
-    let c = read_key () in
-    if (c = 'w') then thrust ()
-    else if (c = 'd') then clock ()
-    else if (c = 'a') then anticlock ()
-  done
+(** Input thread, handles action from the user;
+    `terminator` allows us to gracefully close the client *)
+let input_thread terminator =
+  Thread.delay 0.1; (* Wait a bit so that the graphic window is already created *)
+  try
+    while true do
+      let c = read_key () in
+      if (c = 'w') then thrust ()
+      else if (c = 'd') then clock ()
+      else if (c = 'a') then anticlock ()
+    done
+  (* The graphic window was closed **)
+  with Graphic_failure _ -> terminator ()

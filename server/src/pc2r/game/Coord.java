@@ -4,8 +4,12 @@ public class Coord {
     private double x;
     private double y;
 
+    public Coord(double x, double y) {
+        this.x = x; this.y = y;
+    }
+
     public Coord() {
-        x = 0; y = 0;
+        this(0, 0);
     }
 
     public double getX() { return x; }

@@ -16,18 +16,19 @@ let speclist = [
 let main addr port username =
   let s = Connection.start addr port in
 
+  (* terminator must be executed to gracefully close the client *)
+  let terminator () = (Connection.send s (Exit username); exit 0) in
+
   (* Redefine signal so that ctrl-c in the terminal exits the game gracefully *)
-  ignore (Sys.signal Sys.sigint
-            (Sys.Signal_handle (fun _ -> Connection.send s (Exit username);
-                                 exit 0)));
+  ignore (Sys.signal Sys.sigint (Sys.Signal_handle (fun _ -> terminator ())));
 
   (* Initializing *)
   Connection.send s (Connect username);
   Game.state.player.username <- username;
 
   (* Launching graphics and interaction threads *)
-  ignore (Thread.create Interface.graph_thread refresh_tickrate);
-  ignore (Thread.create Interface.key_thread ());
+  ignore (Thread.create Interface.graph_thread (refresh_tickrate, terminator));
+  ignore (Thread.create Interface.input_thread terminator);
 
   while true do
     Game.move ();

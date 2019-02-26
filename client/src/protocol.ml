@@ -32,9 +32,6 @@ let string_of_clientcmd = function
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
 
-let phase_of_string = function
-  | "attente" -> Attente | "jeu" -> Jeu | _ -> failwith "Unknown phase"
-
 (** Liste de scores *)
 type scores = (string * int) list
 
@@ -73,17 +70,31 @@ let servercmd_of_string s =
                         (scores_of_string (List.nth parts 2)))
   | _ -> failwith "Unknown command"
 
-(** Execute a server command *)
-let execute_command = function
-  | Welcome (phase, scores, coord) -> (
+(** Execute a server command. `send` is a function used to send a command back *)
+let execute_command send = function
+  | Welcome (phase, scores, objCoord) -> (
       Mutex.lock stateMut;
       state.phase <- phase;
       state.scores <- scores;
-      state.objCoord <- coord; state.coords <- [state.player.username, coord];
+      state.objCoord <- objCoord;
       Mutex.unlock stateMut;
       Interface.display_welcome ()
     )
   | Denied -> print_endline "The connection was denied"; exit 1
   | NewPlayer u -> print_endline (Printf.sprintf "Player %s just connected" u)
   | PlayerLeft u -> print_endline (Printf.sprintf "Player %s just left" u)
-  | _ -> failwith "Not yet implemented"
+  | Session (coords, objCoord) -> (
+      Mutex.lock stateMut;
+      state.phase <- Jeu;
+      state.coords <- coords;
+      List.iter (fun (u, coord) -> if (u = state.player.username) then state.player.coord <- coord) coords;
+      state.objCoord <- objCoord;
+      Mutex.unlock stateMut;
+    )
+  | Tick coords -> (
+      Mutex.lock stateMut;
+      state.coords <- coords;
+      Mutex.unlock stateMut;
+      send (NewPos state.player.coord) (* Answer *)
+    )
+  | _ -> failwith "Command execution not yet implemented"

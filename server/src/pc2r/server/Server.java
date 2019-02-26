@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.io.IOException;
 
 import pc2r.commands.CommandParser;
+import pc2r.game.Game;
 import pc2r.game.GameState;
 
 public class Server extends Thread {
@@ -52,9 +53,10 @@ public class Server extends Thread {
 
         // Starting the server
         Server s = new Server(p);
-        s.start();
+        Game g = new Game(s.state);
+        s.start(); g.start();
         try {
-            s.join();
+            s.join(); g.join();
         } catch(InterruptedException e) {}
     }
 }
