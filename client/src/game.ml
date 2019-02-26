@@ -2,8 +2,8 @@
 (*               Current state of the game, as known by the player             *)
 (*******************************************************************************)
 
-(** Width and Height of the arena *)
-let width = 700 and height = 600
+(** Half-width and Half-height of the arena *)
+let w = 350 and h = 300
 
 (** Variables controlling rotation and acceleration *)
 let turnit = 0.2 and thrustit = 0.2
@@ -49,8 +49,8 @@ let stateMut = Mutex.create ()
 let move () =
   Mutex.lock stateMut;
   let (x, y) = state.player.coord and (vx, vy) = state.player.speed in
-  state.player.coord <- (mod_float (x+.vx) (float_of_int width),
-                         mod_float (y+.vy) (float_of_int height));
+  state.player.coord <- (mod_float (x+.vx) (float_of_int (2*w)),
+                         mod_float (y+.vy) (float_of_int (2*h)));
   Mutex.unlock stateMut
 
 (** Augment speed of the vehicle *)

@@ -28,36 +28,36 @@ open Graphics
 
 (** Open the graphic window *)
 let start_graph () =
-  open_graph (Printf.sprintf " %dx%d" width height);
+  open_graph (Printf.sprintf " %dx%d" (w*2) (h*2));
   auto_synchronize false (* We use double buffering, because we're not monsters *)
 
 (** Draw the game's background *)
 let draw_background () =
   clear_graph ();
   set_color black;
-  fill_rect 0 0 width height
+  fill_rect 0 0 (w*2) (h*2)
 
 (** Draw the loading screen *)
 let draw_loading _ =
   set_color (rgb 155 155 0);
-  draw_segments [|(width/4,2*height/3,3*width/4,2*height/3);
-                  (width/4,2*height/3-50,3*width/4,2*height/3-50)|];
+  draw_segments [|(w/2, 4*h/3, 3*w/2, 4*h/3);
+                  (w/2, 4*h/3-50, 3*w/2, 4*h/3-50)|];
   set_text_size 50; (* It unfortunally is not implemented yet... *)
   let (sx, _) = text_size "Vector Arena" in
-  moveto (width/2 - sx/2) (2*height/3-30);
+  moveto (w - sx/2) (4*h/3-30);
   draw_string "Vector Arena"
 
 (** Draw the shape in it's real place, but also on the corresponding borders *)
 let fill_poly_tor shape =
   fill_poly shape;
-  fill_poly (Array.map (fun (x, y) -> (x-width,y)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x,y-height)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x-width,y-height)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x+width,y)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x,y+height)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x+width,y+height)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x+width,y-height)) shape);
-  fill_poly (Array.map (fun (x, y) -> (x-width,y+height)) shape)
+  fill_poly (Array.map (fun (x, y) -> (x-2*w,y)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x,y-2*h)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x-2*w,y-2*h)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x+2*w,y)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x,y+2*h)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x+2*w,y+2*h)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x+2*w,y-2*h)) shape);
+  fill_poly (Array.map (fun (x, y) -> (x-2*w,y+2*h)) shape)
 
 (** Draw the player vehicle (the angle is in radians) *)
 let draw_player (x, y) theta =
@@ -68,7 +68,7 @@ let draw_player (x, y) theta =
                         let xf = (float_of_int x')+.x and yf = (float_of_int y')+.y in
                         let x' = (cos theta) *. (xf-.x) -. (sin theta) *. (yf-.y) +. x
                         and y' = (sin theta) *. (xf-.x) +. (cos theta) *. (yf-.y) +. y in
-                        (int_of_float x'),(int_of_float y'))
+                        (int_of_float x')+w,(int_of_float y')+h)
                      shape) in
   (* We must draw it not only at it's real position, but also if necessary on the other side (tor) *)
   fill_poly_tor realshape
@@ -80,12 +80,12 @@ let draw_other_players coords =
       if (us = state.player.username) then () else
         let shape = [|(0,5);(3,0);(0,-5);(-3,0)|] in
         fill_poly_tor (Array.map (fun (x',y') ->
-            ((int_of_float x)+x',(int_of_float y)+y')) shape)) coords
+            ((int_of_float x)+x'+w,(int_of_float y)+y'+h)) shape)) coords
 
 (** Draw the target *)
 let draw_target (x, y) =
   set_color green;
-  fill_circle (int_of_float x) (int_of_float y) 10
+  fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 10
 
 (** Graphic thread *)
 let graph_thread refresh_tickrate =
