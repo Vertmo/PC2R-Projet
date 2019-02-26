@@ -13,6 +13,23 @@ public class ConnectCommand extends ClientCommand {
 
     @Override
     public void execute() {
-        // TODO
+        if(state.addPlayer(c, username)) {
+            ServerCommand wc = new WelcomeCommand(state.getPhase(),
+                                                  state.getScores(),
+                                                  state.getPlayer(c).getCoord());
+            c.send(wc.toString());
+
+            // Notify the other players of the connection
+            ServerCommand npc = new NewPlayerCommand(username);
+            for(Client c2: state.getPlayers().keySet()) {
+                if(!c2.equals(c)) {
+                    c2.send(npc.toString());
+                }
+            }
+        }
+        else {
+            ServerCommand dc = new DeniedCommand();
+            c.send(dc.toString());
+        }
     }
 }

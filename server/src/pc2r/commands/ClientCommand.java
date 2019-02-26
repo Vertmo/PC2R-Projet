@@ -6,10 +6,10 @@ import pc2r.server.Client;
 // Command sent from the Client to the server
 public abstract class ClientCommand implements Command {
     // State on which commands will be executed
-    private GameState state;
+    protected GameState state;
 
     // Client that sent the command
-    private Client c;
+    protected Client c;
 
     public ClientCommand(GameState state, Client c) {
         this.state = state;

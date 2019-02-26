@@ -15,7 +15,16 @@ let speclist = [
 
 let main addr port username =
   let s = Connection.start addr port in
+
+  (* Initializing *)
   Connection.send s (Connect username);
+  Game.state.player.username <- username;
+
+  (* Redefine signal so that ctrl-c in the terminal exits the game gracefully *)
+  ignore (Sys.signal Sys.sigint
+            (Sys.Signal_handle (fun _ -> Connection.send s (Exit username);
+                                 exit 0)));
+
   while true do
     Thread.delay (1./.(float_of_int refresh_tickrate));
   done

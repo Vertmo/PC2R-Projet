@@ -16,19 +16,10 @@ let my_input_line fd =
 let listen_server s = try
     while true do
       let msg = my_input_line s in
-      print_endline msg
+      print_endline msg;
+      Protocol.execute_command (Protocol.servercmd_of_string msg);
     done
   with Quit -> ()
-
-(** Handle an established connection *)
-let handle_connection s = try
-    while true do
-      let si = (read_line ())^"\n" in
-      ignore (Unix.write s (Bytes.of_string si) 0 (String.length si));
-      let so = (my_input_line s) in
-      print_endline so;
-    done
-    with Quit -> ()
 
 (** Start the connection *)
 let start serv port =

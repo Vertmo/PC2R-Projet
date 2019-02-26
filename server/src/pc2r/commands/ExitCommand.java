@@ -13,6 +13,10 @@ public class ExitCommand extends ClientCommand {
 
     @Override
     public void execute() {
-        // TODO
+        state.removePlayer(c);
+
+        // Notify the other players of the disconnection
+        ServerCommand plc = new PlayerLeftCommand(username);
+        for(Client c2: state.getPlayers().keySet()) c2.send(plc.toString());
     }
 }
