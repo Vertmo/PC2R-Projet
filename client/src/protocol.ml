@@ -79,7 +79,7 @@ let execute_command = function
       Mutex.lock stateMut;
       state.phase <- phase;
       state.scores <- scores;
-      state.player.coord <- coord; state.coords <- [state.player.username, coord];
+      state.objCoord <- coord; state.coords <- [state.player.username, coord];
       Mutex.unlock stateMut;
       Interface.display_welcome ()
     )
