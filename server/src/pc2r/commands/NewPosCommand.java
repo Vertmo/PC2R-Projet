@@ -1,18 +1,19 @@
 package pc2r.commands;
 
 import pc2r.game.GameState;
+import pc2r.game.Coord;
 import pc2r.server.Client;
 
 public class NewPosCommand extends ClientCommand {
-    private float x, y;
+    private Coord coord;
 
-    public NewPosCommand(GameState state, Client c, float x, float y) {
+    public NewPosCommand(GameState state, Client c, double x, double y) {
         super(state, c);
-        this.x = x; this.y = y;
+        coord = new Coord(x, y);
     }
 
     @Override
     public void execute() {
-        // TODO
+        state.getPlayer(c).setCoord(coord);
     }
 }

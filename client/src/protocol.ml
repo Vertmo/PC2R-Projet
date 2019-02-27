@@ -97,4 +97,18 @@ let execute_command send = function
       Mutex.unlock stateMut;
       send (NewPos state.player.coord) (* Answer *)
     )
-  | _ -> failwith "Command execution not yet implemented"
+  | NewObj (coord, scores) -> (
+      Mutex.lock stateMut;
+      state.objCoord <- coord;
+      state.scores <- scores;
+      Mutex.unlock stateMut;
+      Interface.display_scores state.scores
+    )
+  | Winner scores -> (
+      Mutex.lock stateMut;
+      state.scores <- scores;
+      state.phase <- Attente;
+      state.player.speed <- (0., 0.);
+      Mutex.unlock stateMut;
+      Interface.display_winner ()
+    )

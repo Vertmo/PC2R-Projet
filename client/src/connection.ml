@@ -21,7 +21,7 @@ let send s cmd =
 let listen_server s = try
     while true do
       let msg = my_input_line s in
-      print_endline msg;
+      (* print_endline msg; *)
       Protocol.execute_command (send s) (Protocol.servercmd_of_string msg);
     done
   with Quit -> ()

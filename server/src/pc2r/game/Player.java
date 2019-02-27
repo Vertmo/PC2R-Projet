@@ -19,8 +19,15 @@ public class Player {
     public int getScore() { return score; }
     public String getUsername() { return username; }
 
+    public void setCoord(Coord coord) { this.coord = coord; }
+
+    /**
+     * Set the player score back to 0
+     */
+    public void resetScore() { score = 0; }
+
     /**
      * Increment this player's score
      */
-    public void incScore() { this.score++; }
+    public void incScore() { score++; }
 }

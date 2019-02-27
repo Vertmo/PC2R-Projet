@@ -11,7 +11,6 @@ open Game
 (** Print the current scoreboard *)
 let display_scores s =
   print_endline "===============================";
-  print_endline "Current Scores :";
   List.iter (fun (n, s) -> Printf.printf "%s: %d\n" n s) s;
   print_endline "==============================="
 
@@ -19,7 +18,12 @@ let display_scores s =
 let display_welcome () =
   print_endline "Welcome to Vector Arena !";
   if(state.phase = Attente) then print_endline "The game is about to start !"
-  else print_endline "The game is already on !";
+  else (print_endline "The game is already on ! Current scores :";
+        display_scores state.scores)
+
+(** Displays the winner of the game *)
+let display_winner () =
+  print_endline "Game over ! Final scores :";
   display_scores state.scores
 
 (*                     Graphic part of the interface                           *)
@@ -78,7 +82,7 @@ let draw_other_players coords =
   set_color red;
   List.iter (fun (us, (x, y)) ->
       if (us = state.player.username) then () else
-        let shape = [|(0,5);(3,0);(0,-5);(-3,0)|] in
+        let shape = [|(0,8);(5,0);(0,-8);(-5,0)|] in
         fill_poly_tor (Array.map (fun (x',y') ->
             ((int_of_float x)+x'+w,(int_of_float y)+y'+h)) shape)) coords
 
@@ -97,8 +101,8 @@ let graph_thread (refresh_tickrate, terminator) =
       if(state.phase = Attente) then draw_loading ()
       else (
         (* Drawing *)
-        draw_other_players state.coords;
         draw_target state.objCoord;
+        draw_other_players state.coords;
         draw_player (state.player.coord) (state.player.angle);
       );
       synchronize ();

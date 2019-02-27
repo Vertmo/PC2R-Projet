@@ -102,10 +102,11 @@ public class GameState {
     public void startSession() {
         Random r = new Random();
         phase = Phase.Jeu;
-        objCoord.setX(r.nextFloat()*2*w-w); objCoord.setY(r.nextFloat()*2*h-h);
+        objCoord = new Coord(r.nextDouble()*2*w-w, r.nextDouble()*2*h-h);
 
         for(Player p: players.values()) {
-            p.getCoord().setX(r.nextFloat()*2*w-w); p.getCoord().setY(r.nextFloat()*2*h-h);
+            p.getCoord().setX(r.nextDouble()*2*w-w); p.getCoord().setY(r.nextDouble()*2*h-h);
+            p.resetScore();
         }
     }
 
@@ -113,4 +114,12 @@ public class GameState {
      * Set phase to Attente
      */
     public void stopSession() { phase = Phase.Attente; }
+
+    /**
+     * Set a new objective
+     */
+    public void resetObjective() {
+        Random r = new Random();
+        objCoord = new Coord(r.nextFloat()*2*w-w, r.nextFloat()*2*h-h);
+    }
 }
