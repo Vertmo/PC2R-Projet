@@ -1,0 +1,65 @@
+\documentclass{article}
+\usepackage{listings}
+\lstset{language=Caml}
+
+\title{PC2R - Projet - Vector Arena}
+\author{Basile Pesin\\Sorbonne Université}
+
+\begin{document}
+\maketitle
+
+
+\section{Structure du projet}
+
+\subsection{Choix techniques}
+On a choisi de réaliser le serveur en Java: ce choix nous permet de facilement établir la partie ``serveur'' proprement dite (au moyen de la classe \textit{ServerSocket}. De plus, les classes Java nous permettent de facilement encapsuler et protéger les données de jeu.\\
+D'autre part, pour implémenter le client, on a choisi d'utiliser le langage OCaml, pour la simplicité d'utilisation de ces threads (et puisque, comme on le verra, le client utilise un certain nombre de threads différents). La petite difficulté aurait put être la réalisation d'une interface graphique dans ce langage, heureusement la bibliothèque \textit{Graphics} a permit de réaliser une interface très suffisante (bien que simple).
+
+\subsection{Utilisation}
+Les dépendances logicielles sont les suivantes:
+\begin{itemize}
+  \item \textbf{java} (le programme a été testé avec la version 11)
+  \item \textbf{apache ant}
+  \item \textbf{OCaml v4.06.1} et \textbf{opam}
+  \item \textbf{dune}: peut être installé avec \textbf{opam install dune}
+  \item La bibliothèque \textbf{Graphics} d'OCaml (cela peut poser quelques problèmes sur Mac...)
+\end{itemize}
+Le serveur peut être compilé et exécuté en lançant la commande\\
+\centerline{\textbf{ant run}}\\
+dans le dossier \textit{server/}. Le client peut lui être compilé avec\\
+\centerline{\textbf{dune build src/pc2rClient.exe}}\\
+puis lancé avec\\
+\centerline{\textbf{./\_build/default/src/pc2rClient.exe -a localhost -p 45678 riri}}\\
+dans le dossier \textit{client/} (le serveur doit être lancé avant le client). Bien sur, plusieurs clients peuvent être lançés en même temps, y compris sur la même machine.\\\\
+Une fois au moins un joueur connecté, le serveur attends 10 secondes (20 secondes semblait trop long) puis démarre une session. Comme le jeu a été développé sur un ordinateur avec un clavier qwerty, les commandes sont les suivantes:
+\begin{itemize}
+\item \textbf{w} pour thrust
+\item \textbf{d} pour clock
+\item \textbf{a} pour anticlock
+\end{itemize}
+Le joueur doit alors attraper l'objectif. Le premier joueur à obtenir 5 points gagne ! (avant les extensions ou l'on modifiera les rêgles).
+
+\section{Réalisation}
+
+\subsection{Partie A}
+
+\subsubsection{Client}
+Comme on l'a précisé plus haut, le client a été réalisé en OCaml, en utilisant la bibliothèque \textbf{Graphics}. Le client exécute 4 threads en parallèle (pour autant que les threads OCaml soient réellement parallèles):
+\begin{itemize}
+  \item Le thread principal, après avoir lancé les 3 autres threads, s'occupe principalement de gérer le mouvement du joueur, c'est à dire de mettre à jour la position du jour en fonction de sa vitesse. Le thread boucle donc en se mettant en pause pendant $\frac{1}{refresh\_tickrate}$ (on a réglé $refresh\_tickrate = 60$) au moyen de la fonction $Thread.delay$.
+  \item Le thread listener écoute les communications du serveur sur la socket ouverte au début de son execution. La fonction permettant de lire la socket est bloquante tant que celle ci ne reçoit rien, et ce thread ne fait donc pas d'attente active. Ce thread exécute ensuite les commandes reçues depuis le serveur, principalement en modifiant l'état global du jeu (qui est protégé en écriture par un $Mutex.t$).
+  \item Le premier des deux threads gérant l'interface s'occupe de mettre à jour l'interface graphique (c'est à dire de redessiner la position des véhicules, de l'objectif...). Ce thread (et donc l'affichage) est rafraichie à la même fréquence que le thread principal (c'est à dire $refresh\_tickrate$).
+  \item Le dernier thread est chargé de prendre en compte les entrées du joueur (pression sur les touches), au moyen de la fonction $Graphics.read\_key$, qui est bloquante. Ce thread attends donc une entrée du joueur, et exécute la commande correspondante (le thread ne fait donc pas d'attente active).
+\end{itemize}
+
+\subsubsection{Serveur}
+Le serveur est encore plus multi-threadé que le client, puisque, comme on le verra, chaque client dispose d'un thread à son écoute. En effet, le serveur possède une $ServerSocket$, sur laquelle il accepte les connections des clients; il traite ensuite chacune de ces connections dans un nouveau thread, chargé d'attendre les commandes du client et des les éxècuter. Comme pour le client, la lecture de la socket de communication est bien sure bloquante. Une fois une commande reçue, elle est parsée puis exécutée (les commandes reçues des clients sont implémentées selon le design pattern ``Command'', ce qui produit en général un effet sur l'état du jeu tel que stocké côté serveur (dans la classe $pc2r.game.GameState$, dont les écritures sont synchronisées).\\
+En plus de ces threads chargés de la communication, le serveur dispose aussi du thread implémenté dans la classe $Game$, gérant la boucle principale de jeu. Après avoir attendu la connection d'au moins un joueur (attente non active au moyen d'une $Condition$ qu'on signale à la connection), la boucle envoie les mises à jour des positions aux clients tous les $\frac{1}{server\_tickrate}$ (on a fixé $server\_tickrate = 6$) au moyen de la commande $TICK$ (ce à quoi les client répondront par un $NEWPOS$, qui sera traité non pas par ce thread mais par leurs threads de communication respectifs). Le serveur vérifie aussi si un des clients à atteint l'objectif, et le cas échéant déclare un point et/ou la fin de la session.
+
+\subsection{Partie B}
+
+\subsection{Partie C}
+
+\section{Extensions}
+
+\end{document}

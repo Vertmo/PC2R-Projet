@@ -99,7 +99,7 @@ public class GameState {
     /**
      * Set phase to Jeu, set a new objective, and generate random coords for the players
      */
-    public void startSession() {
+    public synchronized void startSession() {
         Random r = new Random();
         phase = Phase.Jeu;
         objCoord = new Coord(r.nextDouble()*2*w-w, r.nextDouble()*2*h-h);
@@ -113,12 +113,12 @@ public class GameState {
     /**
      * Set phase to Attente
      */
-    public void stopSession() { phase = Phase.Attente; }
+    public synchronized void stopSession() { phase = Phase.Attente; }
 
     /**
      * Set a new objective
      */
-    public void resetObjective() {
+    public synchronized void resetObjective() {
         Random r = new Random();
         objCoord = new Coord(r.nextFloat()*2*w-w, r.nextFloat()*2*h-h);
     }

@@ -62,10 +62,9 @@ public class Game extends Thread {
                 }
 
                 // Detect collisions with objective
-                for(Client c: state.getPlayers().keySet()) {
-                    Player p = state.getPlayers().get(c);
+                double ox = state.getObjCoord().getX(); double oy = state.getObjCoord().getY();
+                for(Player p: state.getPlayers().values()) {
                     double x = p.getCoord().getX(); double y = p.getCoord().getY();
-                    double ox = state.getObjCoord().getX(); double oy = state.getObjCoord().getY();
                     if((ox-x)*(ox-x)+(oy-y)*(oy-y) < (ve_radius+objective_radius)*(ve_radius*objective_radius)) {
                         // Update score
                         p.incScore();
@@ -77,13 +76,12 @@ public class Game extends Thread {
                         // Send new objective and scores
                         if(maxScore < win_cap) {
                             NewObjCommand noc = new NewObjCommand(state.getObjCoord(), state.getScores());
-                            for(Client c1: state.getPlayers().keySet()) {
-                                c1.send(noc.toString());
+                            for(Client c: state.getPlayers().keySet()) {
+                                c.send(noc.toString());
                             }
                         }
                         break;
                     }
-
                 }
 
                 try {
