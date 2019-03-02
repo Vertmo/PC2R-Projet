@@ -10,8 +10,11 @@ import pc2r.commands.WinnerCommand;
  * Thread that runs the actual game
  */
 public class Game extends Thread {
+    public static final int server_refresh_tickrate = 60;
     public static final int server_tickrate = 6;
     public static final int win_cap = 5;
+
+    public static final double thrustit = 0.2;
 
     public static final double ve_radius = 10;
     public static final double objective_radius = 15;
@@ -27,11 +30,11 @@ public class Game extends Thread {
         while(true) {
             // Wait until there is at least 1 player
             state.waitUntilHasPlayers();
-            System.out.println("Has players !");
+            System.out.println("Session has players !");
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(10 * 1000);
+                Thread.sleep(1 * 1000); // TEMP
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -55,10 +58,20 @@ public class Game extends Thread {
                     break;
                 }
 
-                // Send position updates
-                TickCommand tc = new TickCommand(state.getCoords());
-                for(Client c: state.getPlayers().keySet()) {
-                    c.send(tc.toString());
+                // Send position updates (only in partie A)
+                // TickCommand tc = new TickCommand(state.getCoords());
+                // for(Client c: state.getPlayers().keySet()) {
+                //     c.send(tc.toString());
+                // }
+
+                // Update coordinates according to speed and angle
+                for(Player p: state.getPlayers().values()) {
+                    p.getLock().lock();
+                    Coord coord = p.getCoord();
+                    Coord speed = p.getSpeed();
+                    coord.setX(coord.getX()+speed.getX());
+                    coord.setY(coord.getY()+speed.getY());
+                    p.getLock().unlock();
                 }
 
                 // Detect collisions with objective
@@ -85,7 +98,7 @@ public class Game extends Thread {
                 }
 
                 try {
-                    Thread.sleep(1000/server_tickrate);
+                    Thread.sleep(1000/server_refresh_tickrate);
                 } catch(InterruptedException e) {}
             }
 

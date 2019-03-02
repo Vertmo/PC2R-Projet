@@ -86,6 +86,28 @@ public class GameState {
     }
 
     /**
+     * @returns the speeds for all the players, indexed by their username
+     */
+    public Map<String, Coord> getSpeeds() {
+        Map<String, Coord> speeds = new HashMap<>();
+        for(Player p: players.values()) {
+            speeds.put(p.getUsername(), p.getSpeed());
+        }
+        return speeds;
+    }
+
+    /**
+     * @returns the angles for all the players, indexed by their username
+     */
+    public Map<String, Double> getAngles() {
+        Map<String, Double> angles = new HashMap<>();
+        for(Player p: players.values()) {
+            angles.put(p.getUsername(), p.getAngle());
+        }
+        return angles;
+    }
+
+    /**
      * Wait until the game has players
      */
     public void waitUntilHasPlayers() {

@@ -30,13 +30,13 @@ public class Client extends Thread {
             System.err.println(e.getMessage());
             return;
         }
-        this.start();
     }
 
     public void send(String s) {
         out.println(s);
     }
 
+    @Override
     public void run() {
         try {
             while(true) {

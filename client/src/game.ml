@@ -25,7 +25,7 @@ type playerState = {
 
 (** State of the whole game *)
 type gameState = {
-  mutable coords: (string * (float * float)) list;
+  mutable coords: (string * (float * float) * (float * float) * float) list;
   mutable scores: (string * int) list;
   mutable phase: phase;
   mutable objCoord: (float * float);
@@ -48,6 +48,8 @@ let state = {
 
 let stateMut = Mutex.create ()
 
+let newCom: (float * int) option ref = ref None
+
 (** Move the vehicle *)
 let move () =
   Mutex.lock stateMut;
@@ -59,19 +61,37 @@ let move () =
 (** Augment speed of the vehicle *)
 let thrust () =
   Mutex.lock stateMut;
-  let (vx, vy) = state.player.speed and theta = state.player.angle in
-  state.player.speed <- (vx+.thrustit*.(cos theta),
-                        vy+.thrustit*.(sin theta));
+  (* Partie A *)
+  (* let (vx, vy) = state.player.speed and theta = state.player.angle in
+   * state.player.speed <- (vx+.thrustit*.(cos theta),
+   *                       vy+.thrustit*.(sin theta)); *)
+
+  (* Partie B *)
+  (match !newCom with
+   | None -> newCom := Some (0., 1)
+   | Some (angle, thrust) -> newCom := Some (angle, thrust+1));
   Mutex.unlock stateMut
 
 (** Turn clockwise *)
 let clock () =
   Mutex.lock stateMut;
-  state.player.angle <- state.player.angle -. turnit;
+  (* Partie A *)
+  (* state.player.angle <- state.player.angle -. turnit; *)
+
+  (* Partie B *)
+  (match !newCom with
+   | None -> newCom := Some (-. turnit, 0)
+   | Some (angle, thrust) -> newCom := Some (angle -. turnit, thrust));
   Mutex.unlock stateMut
 
 (** Turn anticlockwise *)
 let anticlock () =
   Mutex.lock stateMut;
-  state.player.angle <- state.player.angle +. turnit;
+  (* Partie A *)
+  (* state.player.angle <- state.player.angle +. turnit; *)
+
+  (* Partie B *)
+  (match !newCom with
+   | None -> newCom := Some (turnit, 0)
+   | Some (angle, thrust) -> newCom := Some (angle +. turnit, thrust));
   Mutex.unlock stateMut

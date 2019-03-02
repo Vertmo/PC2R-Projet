@@ -14,6 +14,7 @@ public class NewPosCommand extends ClientCommand {
 
     @Override
     public void execute() {
-        state.getPlayer(c).setCoord(coord);
+        // state.getPlayer(c).setCoord(coord);
+        System.err.println("Command NEWPOS is no longer accepted since part B of the project");
     }
 }

@@ -31,7 +31,7 @@ let main addr port username =
   ignore (Thread.create Interface.input_thread terminator);
 
   while true do
-    Game.move ();
+    Game.move (); (* We leave that in in partie B to 'predict' the position of the player *)
     try (* Incoming signals could interrupt this and break everything *)
       Thread.delay (1./.(float_of_int refresh_tickrate));
     with Unix.Unix_error _ -> ()

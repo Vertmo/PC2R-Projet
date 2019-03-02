@@ -19,18 +19,32 @@ let coords_of_string s =
   List.map (fun s -> let l = String.split_on_char ':' s in
              (List.nth l 0, coord_of_string (List.nth l 1))) parts
 
+(** Parses set of v-coordinates for several players *)
+let vcoords_of_string s =
+  let parts = String.split_on_char '|' s in
+  let r = Str.regexp "\\([a-zA-Z0-9]+\\):X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)T\\(-?[0-9.]+\\)" in
+  List.map (fun s ->
+      if (not (Str.string_match r s 0)) then invalid_arg "vcoords_of_string";
+      ((Str.matched_group 1 s),
+       (float_of_string (Str.matched_group 2 s), float_of_string (Str.matched_group 3 s)),
+       (float_of_string (Str.matched_group 4 s), float_of_string (Str.matched_group 5 s)),
+       float_of_string (Str.matched_group 6 s))) parts
+
 (** Commands from Client to Server *)
 type clientcmd =
-  (* Part A *)
+  (* Partie A *)
   | Connect of string
   | Exit of string
   | NewPos of coord
+  (* Partie B *)
+  | NewCom of float * int
 
 (** Translate a client command to a string, to send it to the server *)
 let string_of_clientcmd = function
   | Connect u -> Printf.sprintf "CONNECT/%s/" u
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
+  | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d" angle thrust
 
 (** Liste de scores *)
 type scores = (string * int) list
@@ -42,15 +56,16 @@ let scores_of_string s =
 
 (** Commands from Server to Client *)
 type servercmd =
-  (* Part A *)
+  (* Partie A *)
   | Welcome of phase * scores * coord
   | Denied
   | NewPlayer of string
   | PlayerLeft of string
   | Session of (string * coord) list * coord
   | Winner of scores
-  | Tick of (string * coord) list
+  | Tick of (string * coord * coord * float) list
   | NewObj of coord * scores
+  (* Partie B *)
 
 (** Parses a string to a server command *)
 let servercmd_of_string s =
@@ -65,7 +80,7 @@ let servercmd_of_string s =
   | "SESSION" -> Session (coords_of_string (List.nth parts 1),
                           coord_of_string (List.nth parts 2))
   | "WINNER" -> Winner (scores_of_string (List.nth parts 1))
-  | "TICK" -> Tick (coords_of_string (List.nth parts 1))
+  | "TICK" -> Tick (vcoords_of_string (List.nth parts 1))
   | "NEWOBJ" -> NewObj ((coord_of_string (List.nth parts 1)),
                         (scores_of_string (List.nth parts 2)))
   | _ -> failwith "Unknown command"
@@ -86,7 +101,7 @@ let execute_command send = function
   | Session (coords, objCoord) -> (
       Mutex.lock stateMut;
       state.phase <- Jeu;
-      state.coords <- coords;
+      state.coords <- List.map (fun (u, c) -> (u, c, (0.,0.), 0.)) coords;
       List.iter (fun (u, coord) -> if (u = state.player.username) then state.player.coord <- coord) coords;
       state.objCoord <- objCoord;
       Mutex.unlock stateMut;
@@ -94,8 +109,13 @@ let execute_command send = function
   | Tick coords -> (
       Mutex.lock stateMut;
       state.coords <- coords;
-      Mutex.unlock stateMut;
-      send (NewPos state.player.coord) (* Answer *)
+      List.iter (fun (u, c, s, a) -> if u = state.player.username
+                  then (state.player.coord <- c; state.player.speed <- s; state.player.angle <- a)) coords;
+      (* send (NewPos state.player.coord) *) (* Answer, partie A *)
+      (match !newCom with (* Andwer, partie B *)
+       | Some (angle, thrust) -> send (NewCom (angle, thrust)); newCom := None
+       | None -> ());
+      Mutex.unlock stateMut
     )
   | NewObj (coord, scores) -> (
       Mutex.lock stateMut;

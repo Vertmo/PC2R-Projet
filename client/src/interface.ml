@@ -78,13 +78,20 @@ let draw_player (x, y) theta =
   fill_poly_tor realshape
 
 (** Draw the other players *)
-let draw_other_players coords =
+let draw_other_players coords = (* TODO draw the direction of the other players *)
   set_color red;
-  List.iter (fun (us, (x, y)) ->
+  let shape = [|(20,0);(-20,-10);(-16,0);(-20,10)|] in
+  List.iter (fun (us, (x, y), _, theta) ->
       if (us = state.player.username) then () else
-        let shape = [|(0,8);(5,0);(0,-8);(-5,0)|] in
-        fill_poly_tor (Array.map (fun (x',y') ->
-            ((int_of_float x)+x'+w,(int_of_float y)+y'+h)) shape)) coords
+        let realshape = (Array.map
+                     (fun (x',y') ->
+                        let xf = (float_of_int x')+.x and yf = (float_of_int y')+.y in
+                        let x' = (cos theta) *. (xf-.x) -. (sin theta) *. (yf-.y) +. x
+                        and y' = (sin theta) *. (xf-.x) +. (cos theta) *. (yf-.y) +. y in
+                        (int_of_float x')+w,(int_of_float y')+h)
+                     shape) in
+        fill_poly_tor realshape)
+    coords
 
 (** Draw the target *)
 let draw_target (x, y) =
