@@ -56,6 +56,10 @@ let move () =
   let (x, y) = state.player.coord and (vx, vy) = state.player.speed in
   state.player.coord <- (mod_float (x+.vx) (float_of_int (2*w)),
                          mod_float (y+.vy) (float_of_int (2*h)));
+  state.coords <- List.map (fun (u, (x, y), (vx, vy), a) -> (u, (
+      mod_float (x+.vx) (float_of_int (2*w)),
+      mod_float (y+.vy) (float_of_int (2*h))
+    ), (vx, vy), a)) state.coords;
   Mutex.unlock stateMut
 
 (** Augment speed of the vehicle *)

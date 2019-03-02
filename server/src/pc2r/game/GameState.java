@@ -13,9 +13,6 @@ import pc2r.server.Client;
  * Store the global state of the game
  */
 public class GameState {
-    public static final int w = 350;
-    public static final int h = 300;
-
     private Map<Client, Player> players;
     private Phase phase;
     private Coord objCoord;
@@ -124,10 +121,11 @@ public class GameState {
     public synchronized void startSession() {
         Random r = new Random();
         phase = Phase.Jeu;
-        objCoord = new Coord(r.nextDouble()*2*w-w, r.nextDouble()*2*h-h);
+        objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
 
         for(Player p: players.values()) {
-            p.getCoord().setX(r.nextDouble()*2*w-w); p.getCoord().setY(r.nextDouble()*2*h-h);
+            p.getCoord().setX(r.nextDouble()*2*Game.w-Game.w); p.getCoord().setY(r.nextDouble()*2*Game.h-Game.h);
+            p.setSpeed(new Coord());
             p.resetScore();
         }
     }
@@ -135,13 +133,15 @@ public class GameState {
     /**
      * Set phase to Attente
      */
-    public synchronized void stopSession() { phase = Phase.Attente; }
+    public synchronized void stopSession() {
+        phase = Phase.Attente;
+    }
 
     /**
      * Set a new objective
      */
     public synchronized void resetObjective() {
         Random r = new Random();
-        objCoord = new Coord(r.nextFloat()*2*w-w, r.nextFloat()*2*h-h);
+        objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
     }
 }

@@ -16,8 +16,10 @@ public class Game extends Thread {
 
     public static final double thrustit = 0.2;
 
+    public static final int w = 350;
+    public static final int h = 300;
     public static final double ve_radius = 10;
-    public static final double objective_radius = 15;
+    public static final double objective_radius = 10;
 
     private GameState state;
 
@@ -34,7 +36,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(1 * 1000); // TEMP
+                Thread.sleep(10 * 1000); // TEMP
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -69,8 +71,8 @@ public class Game extends Thread {
                     p.getLock().lock();
                     Coord coord = p.getCoord();
                     Coord speed = p.getSpeed();
-                    coord.setX(coord.getX()+speed.getX());
-                    coord.setY(coord.getY()+speed.getY());
+                    coord.setX((coord.getX()+speed.getX()+3*Game.w)%(2*Game.w)-Game.w);
+                    coord.setY((coord.getY()+speed.getY()+3*Game.h)%(2*Game.h)-Game.h);
                     p.getLock().unlock();
                 }
 
