@@ -70,6 +70,8 @@ Petite amélioration par rapport à la version précédante: comme la commande $
 Comme on l'a vu plus haut, nous avons réglé $server\_tickrate = \frac{refresh\_tickrate}{10} = \frac{server\_refresh\_tickrate}{10}$. Avec ces paramêtres, le jeu reste assez jouable, mais est assez désagréable visuellement, puisque les véhicules semblent en effet se téléporter de quelques pixels à chaque $server\_tickrate$. Le temps de réaction après l'appui sur une touche rends aussi le jeu moins agréable à jouer. On tentera d'améliorer ce problème dans l'une des extensions (calcul coté client et vérification).
 
 \subsection{Partie C}
+Cette partie ne nécessite que peu de modifications. Comme indiqué dans l'énoncé, on modifie les commandes $WELCOME$ et $SESSION$ pour indiquer la position des obstacles, ce qui rend un serveur/client en version ``Partie C'' incompatible avec un client/serveur en version ``Partie B''.\\
+D'un point de vue serveur, le calcul des collisions est réalisé en même temps que les calculs de mouvements par le thread $Game$. D'un point de vue du client, on ajoute la visualisation des obstacles à leurs coordonnées respectives.
 
 \section{Extensions}
 
