@@ -1,5 +1,6 @@
 package pc2r.commands;
 
+import java.util.List;
 import java.util.Map;
 
 import pc2r.game.Phase;
@@ -9,11 +10,13 @@ public class WelcomeCommand extends ServerCommand {
     private Phase phase;
     private Map<String, Integer> scores;
     private Coord coord;
+    private List<Coord> obsCoords;
 
-    public WelcomeCommand(Phase phase, Map<String, Integer> scores, Coord coord) {
+    public WelcomeCommand(Phase phase, Map<String, Integer> scores, Coord coord, List<Coord> obsCoords) {
         this.phase = phase;
         this.scores = scores;
         this.coord = coord;
+        this.obsCoords = obsCoords;
     }
 
     @Override
@@ -22,11 +25,21 @@ public class WelcomeCommand extends ServerCommand {
         if(phase == Phase.Attente) ph = "attente";
         else ph = "jeu";
 
-        String score = "";
+        String scoreS = "";
         for(String username: scores.keySet()) {
-            score += "|" + username + ":" + scores.get(username);
+            scoreS += "|" + username + ":" + scores.get(username);
         }
 
-        return "WELCOME/" + ph + "/" + score.substring(1, score.length()) + "/" + coord +  "/";
+        if(obsCoords.isEmpty()) {
+            return "WELCOME/" + ph + "/" + scoreS.substring(1, scoreS.length()) + "/" + coord + "/";
+        }
+
+        String obsCoordS = "";
+        for(Coord c: obsCoords) {
+            obsCoordS += "|" + c.toString();
+        }
+
+        return "WELCOME/" + ph + "/" + scoreS.substring(1, scoreS.length()) +
+            "/" + coord +  "/" + obsCoordS.substring(1, obsCoordS.length()) + "/";
     }
 }

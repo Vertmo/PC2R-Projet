@@ -78,7 +78,7 @@ let draw_player (x, y) theta =
   fill_poly_tor realshape
 
 (** Draw the other players *)
-let draw_other_players coords = (* TODO draw the direction of the other players *)
+let draw_other_players coords =
   set_color red;
   let shape = [|(20,0);(-20,-10);(-16,0);(-20,10)|] in
   List.iter (fun (us, (x, y), _, theta) ->
@@ -98,6 +98,11 @@ let draw_target (x, y) =
   set_color green;
   fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 20
 
+(** Draw the obstacles *)
+let draw_obstacles coords =
+  set_color (rgb 255 102 0);
+  List.iter (fun (x, y) -> fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 20) coords
+
 (** Graphic thread;
     `terminator` allows us to gracefully close the client *)
 let graph_thread (refresh_tickrate, terminator) =
@@ -109,6 +114,7 @@ let graph_thread (refresh_tickrate, terminator) =
       else (
         (* Drawing *)
         draw_target state.objCoord;
+        draw_obstacles state.obsCoords;
         draw_other_players state.coords;
         draw_player (state.player.coord) (state.player.angle);
       );

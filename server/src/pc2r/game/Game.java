@@ -18,8 +18,9 @@ public class Game extends Thread {
 
     public static final int w = 350;
     public static final int h = 300;
-    public static final double ve_radius = 10;
+    public static final double ve_radius = 8;
     public static final double objective_radius = 10;
+    public static final double obs_radius = 10;
 
     private GameState state;
 
@@ -36,7 +37,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(10 * 1000); // TEMP
+                Thread.sleep(10 * 1000);
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -47,7 +48,7 @@ public class Game extends Thread {
             state.startSession();
 
             // Send the start session command to the client
-            SessionCommand sc = new SessionCommand(state.getCoords(), state.getObjCoord());
+            SessionCommand sc = new SessionCommand(state.getCoords(), state.getObjCoord(), state.getObsCoords());
             for(Client c: state.getPlayers().keySet()) {
                 c.send(sc.toString());
             }
@@ -60,7 +61,7 @@ public class Game extends Thread {
                     break;
                 }
 
-                // Send position updates (only in partie A)
+                // Send position updates (only in Partie A)
                 // TickCommand tc = new TickCommand(state.getCoords());
                 // for(Client c: state.getPlayers().keySet()) {
                 //     c.send(tc.toString());
@@ -73,6 +74,16 @@ public class Game extends Thread {
                     Coord speed = p.getSpeed();
                     coord.setX((coord.getX()+speed.getX()+3*Game.w)%(2*Game.w)-Game.w);
                     coord.setY((coord.getY()+speed.getY()+3*Game.h)%(2*Game.h)-Game.h);
+
+                    // Check if we've collided with an obstacle
+                    double x = coord.getX(); double y = coord.getY();
+                    for(Coord obsC: state.getObsCoords()) {
+                        double ox = obsC.getX(); double oy = obsC.getY();
+                        if((ox-x)*(ox-x)+(oy-y)*(oy-y) < (ve_radius+obs_radius)*(ve_radius*obs_radius)) {
+                            speed.setX(-speed.getX()); speed.setY(-speed.getY());
+                            break;
+                        }
+                    }
                     p.getLock().unlock();
                 }
 

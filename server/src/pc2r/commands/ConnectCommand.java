@@ -16,7 +16,8 @@ public class ConnectCommand extends ClientCommand {
         if(state.addPlayer(c, username)) {
             ServerCommand wc = new WelcomeCommand(state.getPhase(),
                                                   state.getScores(),
-                                                  state.getObjCoord());
+                                                  state.getObjCoord(),
+                                                  state.getObsCoords());
             c.send(wc.toString());
 
             // Notify the other players of the connection

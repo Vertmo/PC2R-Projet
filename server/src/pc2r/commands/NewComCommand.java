@@ -19,7 +19,7 @@ public class NewComCommand extends ClientCommand {
     public void execute() {
         Player p = state.getPlayer(c);
         p.getLock().lock();
-        p.setAngle(((p.getAngle()+angle)+2*Math.PI) % (2*Math.PI));
+        p.setAngle((p.getAngle()+angle+2*Math.PI) % (2*Math.PI));
         Coord speed = p.getSpeed();
         speed.setX(speed.getX()+(double)nbThrust*Math.cos(p.getAngle()));
         speed.setY(speed.getY()+(double)nbThrust*Math.sin(p.getAngle()));

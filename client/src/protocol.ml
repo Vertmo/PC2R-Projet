@@ -4,22 +4,27 @@
 
 open Game
 
-(** Coordinates *)
-type coord = float * float
-
+(** Parse a single coordinate from a string *)
 let coord_of_string s =
   let strings = String.split_on_char 'Y' s in
   let xs = (String.sub (List.nth strings 0) 1 ((String.length (List.nth strings 0))-1))
   and ys = List.nth strings 1 in
   (float_of_string xs, float_of_string ys)
 
-(** Parses set of coordinates for several players *)
+(** Parse a list of coordinates *)
 let coords_of_string s =
+  let strings = String.split_on_char '|' s in
+  match strings with
+  | [ "" ] -> []
+  | _ -> List.map coord_of_string strings
+
+(** Parse set of coordinates for several players *)
+let player_coords_of_string s =
   let parts = String.split_on_char '|' s in
   List.map (fun s -> let l = String.split_on_char ':' s in
              (List.nth l 0, coord_of_string (List.nth l 1))) parts
 
-(** Parses set of v-coordinates for several players *)
+(** Parse set of v-coordinates for several players *)
 let vcoords_of_string s =
   let parts = String.split_on_char '|' s in
   let r = Str.regexp "\\([a-zA-Z0-9]+\\):X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)T\\(-?[0-9.]+\\)" in
@@ -57,11 +62,11 @@ let scores_of_string s =
 (** Commands from Server to Client *)
 type servercmd =
   (* Partie A *)
-  | Welcome of phase * scores * coord
+  | Welcome of phase * scores * coord * coord list
   | Denied
   | NewPlayer of string
   | PlayerLeft of string
-  | Session of (string * coord) list * coord
+  | Session of (string * coord) list * coord * coord list
   | Winner of scores
   | Tick of (string * coord * coord * float) list
   | NewObj of coord * scores
@@ -73,12 +78,14 @@ let servercmd_of_string s =
   match (List.hd parts) with
   | "WELCOME" -> Welcome (phase_of_string (List.nth parts 1),
                           scores_of_string (List.nth parts 2),
-                          coord_of_string (List.nth parts 3))
+                          coord_of_string (List.nth parts 3),
+                          coords_of_string (List.nth parts 4))
   | "DENIED" -> Denied
   | "NEWPLAYER" -> NewPlayer (List.nth parts 1)
   | "PLAYERLEFT" -> PlayerLeft (List.nth parts 1)
-  | "SESSION" -> Session (coords_of_string (List.nth parts 1),
-                          coord_of_string (List.nth parts 2))
+  | "SESSION" -> Session (player_coords_of_string (List.nth parts 1),
+                          coord_of_string (List.nth parts 2),
+                          coords_of_string (List.nth parts 3))
   | "WINNER" -> Winner (scores_of_string (List.nth parts 1))
   | "TICK" -> Tick (vcoords_of_string (List.nth parts 1))
   | "NEWOBJ" -> NewObj ((coord_of_string (List.nth parts 1)),
@@ -87,23 +94,25 @@ let servercmd_of_string s =
 
 (** Execute a server command. `send` is a function used to send a command back *)
 let execute_command send = function
-  | Welcome (phase, scores, objCoord) -> (
+  | Welcome (phase, scores, objCoord, obsCoords) -> (
       Mutex.lock stateMut;
       state.phase <- phase;
       state.scores <- scores;
       state.objCoord <- objCoord;
+      state.obsCoords <- obsCoords;
       Mutex.unlock stateMut;
       Interface.display_welcome ()
     )
   | Denied -> print_endline "The connection was denied"; exit 1
   | NewPlayer u -> print_endline (Printf.sprintf "Player %s just connected" u)
   | PlayerLeft u -> print_endline (Printf.sprintf "Player %s just left" u)
-  | Session (coords, objCoord) -> (
+  | Session (coords, objCoord, obsCoords) -> (
       Mutex.lock stateMut;
       state.phase <- Jeu;
       state.coords <- List.map (fun (u, c) -> (u, c, (0.,0.), 0.)) coords;
       List.iter (fun (u, coord) -> if (u = state.player.username) then state.player.coord <- coord) coords;
       state.objCoord <- objCoord;
+      state.obsCoords <- obsCoords;
       Mutex.unlock stateMut;
     )
   | Tick coords -> (
@@ -112,7 +121,7 @@ let execute_command send = function
       List.iter (fun (u, c, s, a) -> if u = state.player.username
                   then (state.player.coord <- c; state.player.speed <- s; state.player.angle <- a)) coords;
       (* send (NewPos state.player.coord) *) (* Answer, partie A *)
-      (match !newCom with (* Andwer, partie B *)
+      (match !newCom with (* Answer, partie B *)
        | Some (angle, thrust) -> send (NewCom (angle, thrust)); newCom := None
        | None -> ());
       Mutex.unlock stateMut

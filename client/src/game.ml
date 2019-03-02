@@ -14,21 +14,25 @@ type phase = Attente | Jeu
 let phase_of_string = function
   | "attente" -> Attente | "jeu" -> Jeu | _ -> failwith "Unknown phase"
 
+(** Coordinates *)
+type coord = float * float
+
 (** Player state (coordinates, speed and score) *)
 type playerState = {
   mutable username: string;
-  mutable coord: float * float;
-  mutable speed: float * float;
+  mutable coord: coord;
+  mutable speed: coord;
   mutable angle: float;
   mutable score: int;
 }
 
 (** State of the whole game *)
 type gameState = {
-  mutable coords: (string * (float * float) * (float * float) * float) list;
+  mutable coords: (string * coord * coord * float) list;
   mutable scores: (string * int) list;
   mutable phase: phase;
-  mutable objCoord: (float * float);
+  mutable objCoord: coord;
+  mutable obsCoords: coord list;
   mutable player: playerState;
 }
 
@@ -37,6 +41,7 @@ let state = {
   scores = [];
   phase = Attente;
   objCoord = (0., 0.);
+  obsCoords = [];
   player = {
     username = "";
     coord = (0., 0.);

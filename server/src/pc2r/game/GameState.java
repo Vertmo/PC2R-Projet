@@ -1,5 +1,7 @@
 package pc2r.game;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
@@ -16,6 +18,7 @@ public class GameState {
     private Map<Client, Player> players;
     private Phase phase;
     private Coord objCoord;
+    private List<Coord> obsCoords;
 
     private Lock lHasPlayers; private Condition hasPlayers;
 
@@ -24,17 +27,15 @@ public class GameState {
         phase = Phase.Attente;
         lHasPlayers = new ReentrantLock(); hasPlayers = lHasPlayers.newCondition();
         objCoord = new Coord();
+        obsCoords = new ArrayList<>();
     }
 
     public Phase getPhase() { return phase; }
-
     public Map<Client, Player> getPlayers() { return players; }
-
     public Player getPlayer(Client c) { return players.get(c); }
-
     public int getNbPlayers() { return players.size(); }
-
     public Coord getObjCoord() { return objCoord; }
+    public List<Coord> getObsCoords() { return obsCoords; }
 
     /**
      * Check if there is a player with the same username, and add a new player if not
@@ -122,6 +123,13 @@ public class GameState {
         Random r = new Random();
         phase = Phase.Jeu;
         objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
+
+        // Generate obstacles (between 3 and 6)
+        obsCoords.clear();
+        int nbObs = r.nextInt(3) + 3;
+        for(int i = 0; i < nbObs; i++) {
+            obsCoords.add(new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h));
+        }
 
         for(Player p: players.values()) {
             p.getCoord().setX(r.nextDouble()*2*Game.w-Game.w); p.getCoord().setY(r.nextDouble()*2*Game.h-Game.h);
