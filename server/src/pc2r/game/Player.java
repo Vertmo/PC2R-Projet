@@ -18,8 +18,8 @@ public class Player {
     public Player(String username) {
         Random r = new Random();
         this.username = username;
-        coord = new Coord(r.nextFloat()*2*GameState.w-GameState.w,
-                          r.nextFloat()*2*GameState.h-GameState.h);
+        coord = new Coord(r.nextFloat()*2*Game.w-Game.w,
+                          r.nextFloat()*2*Game.h-Game.h);
         speed = new Coord(); angle = 0;
         score = 0;
         lock = new ReentrantLock();
