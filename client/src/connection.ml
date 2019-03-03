@@ -24,7 +24,7 @@ let send s cmd =
 let send_commands s =
   while true do
     let (angle, thrust) = !Game.newCom in
-    send s (NewCom (angle, thrust));
+    send s (NewPosCom (Game.state.player.coord, angle, thrust));
     Game.newCom := (0., 0);
     Thread.delay (1./.(float_of_int server_tickrate));
   done

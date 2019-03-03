@@ -71,9 +71,9 @@ let move () =
 let thrust() =
   Mutex.lock stateMut;
   (* Partie A *)
-  (* let (vx, vy) = state.player.speed and theta = state.player.angle in
-   * state.player.speed <- (vx+.thrustit*.(cos theta),
-   *                       vy+.thrustit*.(sin theta)); *)
+  let (vx, vy) = state.player.speed and theta = state.player.angle in
+  state.player.speed <- (vx+.thrustit*.(cos theta),
+                        vy+.thrustit*.(sin theta));
 
   (* Partie B *)
   let (angle, thrust) = !newCom in
@@ -84,7 +84,7 @@ let thrust() =
 let clock () =
   Mutex.lock stateMut;
   (* Partie A *)
-  (* state.player.angle <- state.player.angle -. turnit; *)
+  state.player.angle <- state.player.angle -. turnit;
 
   (* Partie B *)
   let (angle, thrust) = !newCom in
@@ -95,7 +95,7 @@ let clock () =
 let anticlock () =
   Mutex.lock stateMut;
   (* Partie A *)
-  (* state.player.angle <- state.player.angle +. turnit; *)
+  state.player.angle <- state.player.angle +. turnit;
 
   (* Partie B *)
   let (angle, thrust) = !newCom in

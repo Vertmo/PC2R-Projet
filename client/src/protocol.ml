@@ -52,7 +52,7 @@ let string_of_clientcmd = function
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
   | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d" angle thrust
-  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%fA%fD%d" x y angle thrust
+  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%fA%fT%d" x y angle thrust
 
 (** Liste de scores *)
 type scores = (string * int) list
