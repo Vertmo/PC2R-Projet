@@ -29,7 +29,7 @@ let vcoords_of_string s =
   let parts = String.split_on_char '|' s in
   let r = Str.regexp "\\([a-zA-Z0-9]+\\):X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)T\\(-?[0-9.]+\\)" in
   List.map (fun s ->
-      if (not (Str.string_match r s 0)) then invalid_arg "vcoords_of_string";
+      if (not (Str.string_match r s 0)) then invalid_arg (Printf.sprintf "vcoords_of_string: %s" s);
       ((Str.matched_group 1 s),
        (float_of_string (Str.matched_group 2 s), float_of_string (Str.matched_group 3 s)),
        (float_of_string (Str.matched_group 4 s), float_of_string (Str.matched_group 5 s)),
@@ -52,7 +52,7 @@ let string_of_clientcmd = function
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
   | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d" angle thrust
-  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%fA%fT%d" x y angle thrust
+  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%f/A%fT%d" x y angle thrust
 
 (** Liste de scores *)
 type scores = (string * int) list

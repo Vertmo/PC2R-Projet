@@ -18,7 +18,7 @@ public class Game extends Thread {
 
     public static final int w = 350;
     public static final int h = 300;
-    public static final double ve_radius = 8;
+    public static final double ve_radius = 10;
     public static final double objective_radius = 10;
     public static final double obs_radius = 10;
 
@@ -37,7 +37,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(1 * 1000);
+                Thread.sleep(10 * 1000);
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -79,8 +79,10 @@ public class Game extends Thread {
                     double x = coord.getX(); double y = coord.getY();
                     for(Coord obsC: state.getObsCoords()) {
                         double ox = obsC.getX(); double oy = obsC.getY();
-                        if((ox-x)*(ox-x)+(oy-y)*(oy-y) < (ve_radius+obs_radius)*(ve_radius*obs_radius)) {
-                            speed.setX(-speed.getX()); speed.setY(-speed.getY());
+                        if((x-ox)*(x-ox)+(y-oy)*(y-oy) < (ve_radius+obs_radius)*(ve_radius+obs_radius)) {
+                            // Only go away from the obstacle (avoid getting stuck inside)
+                            if((x-ox)*speed.getX() < 0) speed.setX(-speed.getX());
+                            if((y-oy)*speed.getY() < 0)speed.setY(-speed.getY());
                             break;
                         }
                     }

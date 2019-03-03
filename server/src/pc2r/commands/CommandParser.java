@@ -35,13 +35,12 @@ public class CommandParser {
                 return new NewComCommand(state, c, a, nbt);
 
             } else if (parts[0].equals("NEWPOSCOM")) {
-                String[] parts1 = parts[1].split("T");
-                String[] parts2 = parts1[0].split("A");
-                String[] parts3 = parts2[0].split("Y");
-                double x = Double.parseDouble(parts3[0].substring(1, parts3[0].length()));
-                double y = Double.parseDouble(parts3[1]);
-                double a = Double.parseDouble(parts2[1]);
-                int nbt = Integer.parseInt(parts1[1]);
+                String[] parts1 = parts[1].split("Y");
+                String[] parts2 = parts[2].split("T");
+                double x = Double.parseDouble(parts1[0].substring(1, parts1[0].length()));
+                double y = Double.parseDouble(parts1[1]);
+                double a = Double.parseDouble(parts2[0].substring(1, parts2[0].length()));
+                int nbt = Integer.parseInt(parts2[1]);
                 return new NewPosComCommand(state, c, x, y, a, nbt);
 
             } else throw new CommandParseException(s, "name of the command not recognized");

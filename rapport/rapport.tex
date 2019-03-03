@@ -75,4 +75,12 @@ D'un point de vue serveur, le calcul des collisions est réalisé en même temps
 
 \section{Extensions}
 
+\subsection{Calcul coté client et vérification}
+Comme on l'a vu plus haut, le ``lag'' crée par les calculs côté serveur est une assez grande source de frustration, puisque le jeu en deviens beaucoup moins jouable (et par ailleurs moins agréable visuellement). On a donc décidé, avant d'ajouter de nouvelles fonctionnalités au jeu, de commencer par régler ce problème.\\
+Pour ce faire, on a ajouté une nouvelle commande envoyant à la fois les coordonnées actuelles du véhicule du joueur, et la dernière commande entrée. Cette commande (Client $\rightarrow$ Serveur) a la syntaxe suivante:
+$$NEWCOMPOS/coord/comms/$$
+avec $coord$ et $comms$ telles que définies dans le sujet.\\
+A la reception de cette commande, le serveur met à jour les informations (vitesse et angle) du joueur, comme il le ferait pour la commande $NEWCOM$. Puis, le serveur vérifie si les coordonnées reçues sont suffisemment proche de celles qu'il avait calculé préalablement (ici on a pris comme distance maximale une quinzaine de pixels). Si c'est le cas, il accepte les coordonnées calculées par le client.\\
+On voit en jouant que cette extension permet bien de réduire les ``téléportations'' du véhicule. Cependant, celles-ci se manifestent encore quand le véhicule se déplace à grand vitesse (puisque les écarts entre les calculs du client et du serveur sont alors potentiellement plus importants). On pourrait absorber ses écarts en augmentant la distance maximale autorisée, ou bien en faisant de cette distance une fonction croissante de la vitesse du véhicule. Cependant, si on suivait cette dernière piste, le client pourrait alors tricher en communiquant une vitesse très importante (ce qui augmenterait l'écart maximal accepté par le serveur), puis en communiquant les coordonnées de l'objectif. On choisit donc de conserver le compromis actuel.
+
 \end{document}
