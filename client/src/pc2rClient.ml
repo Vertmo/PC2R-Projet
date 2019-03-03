@@ -26,6 +26,9 @@ let main addr port username =
   Connection.send s (Connect username);
   Game.state.player.username <- username;
 
+  (* Starting command-sending thread *)
+  ignore (Thread.create Connection.send_commands s);
+
   (* Launching graphics and interaction threads *)
   ignore (Thread.create Interface.graph_thread (refresh_tickrate, terminator));
   ignore (Thread.create Interface.input_thread terminator);

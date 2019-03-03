@@ -43,6 +43,8 @@ type clientcmd =
   | NewPos of coord
   (* Partie B *)
   | NewCom of float * int
+  (* Extension : calcul coté client *)
+  | NewPosCom of (float * float) * float * int
 
 (** Translate a client command to a string, to send it to the server *)
 let string_of_clientcmd = function
@@ -50,6 +52,7 @@ let string_of_clientcmd = function
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
   | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d" angle thrust
+  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%fA%fD%d" x y angle thrust
 
 (** Liste de scores *)
 type scores = (string * int) list
@@ -92,8 +95,8 @@ let servercmd_of_string s =
                         (scores_of_string (List.nth parts 2)))
   | _ -> failwith "Unknown command"
 
-(** Execute a server command. `send` is a function used to send a command back *)
-let execute_command send = function
+(** Execute a server command *)
+let execute_command = function
   | Welcome (phase, scores, objCoord, obsCoords) -> (
       Mutex.lock stateMut;
       state.phase <- phase;
@@ -121,9 +124,6 @@ let execute_command send = function
       List.iter (fun (u, c, s, a) -> if u = state.player.username
                   then (state.player.coord <- c; state.player.speed <- s; state.player.angle <- a)) coords;
       (* send (NewPos state.player.coord) *) (* Answer, partie A *)
-      (match !newCom with (* Answer, partie B *)
-       | Some (angle, thrust) -> send (NewCom (angle, thrust)); newCom := None
-       | None -> ());
       Mutex.unlock stateMut
     )
   | NewObj (coord, scores) -> (

@@ -30,8 +30,7 @@ public class Server extends Thread {
             while(true) {
                 Socket client = sc.accept();
                 Client cl = new Client(client, parser);
-                ClientSender cs = new ClientSender(cl, state);
-                cl.start(); cs.start();
+                cl.start();
             }
         } catch(IOException e) {
             System.err.println(e.getMessage());

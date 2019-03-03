@@ -53,7 +53,7 @@ let state = {
 
 let stateMut = Mutex.create ()
 
-let newCom: (float * int) option ref = ref None
+let newCom = ref (0., 0)
 
 (** Move the vehicle *)
 let move () =
@@ -68,7 +68,7 @@ let move () =
   Mutex.unlock stateMut
 
 (** Augment speed of the vehicle *)
-let thrust () =
+let thrust() =
   Mutex.lock stateMut;
   (* Partie A *)
   (* let (vx, vy) = state.player.speed and theta = state.player.angle in
@@ -76,9 +76,8 @@ let thrust () =
    *                       vy+.thrustit*.(sin theta)); *)
 
   (* Partie B *)
-  (match !newCom with
-   | None -> newCom := Some (0., 1)
-   | Some (angle, thrust) -> newCom := Some (angle, thrust+1));
+  let (angle, thrust) = !newCom in
+  newCom := (angle, thrust + 1);
   Mutex.unlock stateMut
 
 (** Turn clockwise *)
@@ -88,9 +87,8 @@ let clock () =
   (* state.player.angle <- state.player.angle -. turnit; *)
 
   (* Partie B *)
-  (match !newCom with
-   | None -> newCom := Some (-. turnit, 0)
-   | Some (angle, thrust) -> newCom := Some (angle -. turnit, thrust));
+  let (angle, thrust) = !newCom in
+  newCom := (angle -. thrustit, thrust);
   Mutex.unlock stateMut
 
 (** Turn anticlockwise *)
@@ -100,7 +98,6 @@ let anticlock () =
   (* state.player.angle <- state.player.angle +. turnit; *)
 
   (* Partie B *)
-  (match !newCom with
-   | None -> newCom := Some (turnit, 0)
-   | Some (angle, thrust) -> newCom := Some (angle +. turnit, thrust));
+  let (angle, thrust) = !newCom in
+  newCom := (angle +. thrustit, thrust);
   Mutex.unlock stateMut

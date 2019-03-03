@@ -37,7 +37,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(10 * 1000);
+                Thread.sleep(1 * 1000);
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
