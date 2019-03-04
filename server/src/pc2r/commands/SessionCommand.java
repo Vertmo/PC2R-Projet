@@ -7,12 +7,12 @@ import pc2r.game.Coord;
 
 public class SessionCommand extends ServerCommand {
     private Map<String, Coord> coords;
-    private Coord objCoord;
+    private List<Coord> objCoords;
     private List<Coord> obsCoords;
 
-    public SessionCommand(Map<String, Coord> coords, Coord objCoord, List<Coord> obsCoords) {
+    public SessionCommand(Map<String, Coord> coords, List<Coord> objCoords, List<Coord> obsCoords) {
         this.coords = coords;
-        this.objCoord = objCoord;
+        this.objCoords = objCoords;
         this.obsCoords = obsCoords;
     }
 
@@ -29,7 +29,13 @@ public class SessionCommand extends ServerCommand {
             obsCoordS += "|" + c.toString();
         }
 
+        String objCoordS = "";
+        for(Coord c: objCoords) {
+            objCoordS += "|" + c.toString();
+        }
+
         return "SESSION/" + playerCoords.substring(1, playerCoords.length()) +
-            "/" + objCoord.toString() + "/" + obsCoordS.substring(1, obsCoordS.length()) + "/";
+            "/" + objCoordS.substring(1, objCoordS.length()) +
+            "/" + obsCoordS.substring(1, obsCoordS.length()) + "/";
     }
 }

@@ -31,7 +31,7 @@ type gameState = {
   mutable coords: (string * coord * coord * float) list;
   mutable scores: (string * int) list;
   mutable phase: phase;
-  mutable objCoord: coord;
+  mutable objCoords: coord list;
   mutable obsCoords: coord list;
   mutable player: playerState;
 }
@@ -40,7 +40,7 @@ let state = {
   coords = [];
   scores = [];
   phase = Attente;
-  objCoord = (0., 0.);
+  objCoords = [];
   obsCoords = [];
   player = {
     username = "";

@@ -17,7 +17,7 @@ import pc2r.server.Client;
 public class GameState {
     private Map<Client, Player> players;
     private Phase phase;
-    private Coord objCoord;
+    private List<Coord> objCoords;
     private List<Coord> obsCoords;
 
     private Lock lHasPlayers; private Condition hasPlayers;
@@ -26,7 +26,7 @@ public class GameState {
         players = new HashMap<>();
         phase = Phase.Attente;
         lHasPlayers = new ReentrantLock(); hasPlayers = lHasPlayers.newCondition();
-        objCoord = new Coord();
+        objCoords = new ArrayList<>();
         obsCoords = new ArrayList<>();
     }
 
@@ -34,7 +34,7 @@ public class GameState {
     public Map<Client, Player> getPlayers() { return players; }
     public Player getPlayer(Client c) { return players.get(c); }
     public int getNbPlayers() { return players.size(); }
-    public Coord getObjCoord() { return objCoord; }
+    public List<Coord> getObjCoords() { return objCoords; }
     public List<Coord> getObsCoords() { return obsCoords; }
 
     /**
@@ -122,7 +122,12 @@ public class GameState {
     public synchronized void startSession() {
         Random r = new Random();
         phase = Phase.Jeu;
-        objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
+
+        // Generate ordered objective coords
+        objCoords.clear();
+        for(int i = 0; i < Game.win_cap; i++) {
+            objCoords.add(new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h));
+        }
 
         // Generate obstacles (between 3 and 6)
         obsCoords.clear();
@@ -147,9 +152,10 @@ public class GameState {
 
     /**
      * Set a new objective
+     * No longer relevant in extensions
      */
-    public synchronized void resetObjective() {
-        Random r = new Random();
-        objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
-    }
+    // public synchronized void resetObjective() {
+    //     Random r = new Random();
+    //     objCoord = new Coord(r.nextDouble()*2*Game.w-Game.w, r.nextDouble()*2*Game.h-Game.h);
+    // }
 }

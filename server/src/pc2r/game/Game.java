@@ -37,7 +37,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(10 * 1000);
+                Thread.sleep(1 * 1000);
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -48,7 +48,7 @@ public class Game extends Thread {
             state.startSession();
 
             // Send the start session command to the client
-            SessionCommand sc = new SessionCommand(state.getCoords(), state.getObjCoord(), state.getObsCoords());
+            SessionCommand sc = new SessionCommand(state.getCoords(), state.getObjCoords(), state.getObsCoords());
             for(Client c: state.getPlayers().keySet()) {
                 c.send(sc.toString());
             }
@@ -89,21 +89,22 @@ public class Game extends Thread {
                     p.getLock().unlock();
                 }
 
-                // Detect collisions with objective
-                double ox = state.getObjCoord().getX(); double oy = state.getObjCoord().getY();
+                // Detect collisions with relevant objective for the player
                 for(Player p: state.getPlayers().values()) {
+                    double ox = state.getObjCoords().get(p.getScore()).getX();
+                    double oy = state.getObjCoords().get(p.getScore()).getY();
                     double x = p.getCoord().getX(); double y = p.getCoord().getY();
                     if((ox-x)*(ox-x)+(oy-y)*(oy-y) < (ve_radius+objective_radius)*(ve_radius*objective_radius)) {
                         // Update score
                         p.incScore();
                         if(p.getScore() > maxScore) maxScore = p.getScore();
 
-                        // Set new objective
-                        state.resetObjective();
+                        // Set new objective (no longer relevant in extensions)
+                        // state.resetObjective();
 
-                        // Send new objective and scores
+                        // Send new objective and scores (only the score will be taken into account in the extension)
                         if(maxScore < win_cap) {
-                            NewObjCommand noc = new NewObjCommand(state.getObjCoord(), state.getScores());
+                            NewObjCommand noc = new NewObjCommand(state.getObjCoords().get(p.getScore()), state.getScores());
                             for(Client c: state.getPlayers().keySet()) {
                                 c.send(noc.toString());
                             }

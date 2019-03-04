@@ -46,7 +46,7 @@ let draw_loading _ =
   set_color (rgb 0 200 200);
   draw_segments [|(w/2, 4*h/3, 3*w/2, 4*h/3);
                   (w/2, 4*h/3-50, 3*w/2, 4*h/3-50)|];
-  set_text_size 50; (* It unfortunally is not implemented yet... *)
+  (* set_text_size 50; *) (* It unfortunally is not implemented yet... *)
   let (sx, _) = text_size "Vector Arena" in
   moveto (w - sx/2) (4*h/3-30);
   draw_string "Vector Arena"
@@ -93,10 +93,18 @@ let draw_other_players coords =
         fill_poly_tor realshape)
     coords
 
-(** Draw the target *)
-let draw_target (x, y) =
+(** Draw an objective *)
+let draw_objective i (x, y) =
+  if (i = state.player.score) then (
+    set_color yellow;
+    fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 25;
+  );
   set_color green;
-  fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 20
+  fill_circle ((int_of_float x)+w) ((int_of_float y)+h) 20;
+  set_color black;
+  let (sx, sy) = text_size (string_of_int i) in
+  moveto ((int_of_float x)+w-sx/2) ((int_of_float y)+h-sy/2);
+  draw_string (string_of_int i)
 
 (** Draw the obstacles *)
 let draw_obstacles coords =
@@ -113,7 +121,7 @@ let graph_thread (refresh_tickrate, terminator) =
       if(state.phase = Attente) then draw_loading ()
       else (
         (* Drawing *)
-        draw_target state.objCoord;
+        List.iteri draw_objective state.objCoords;
         draw_obstacles state.obsCoords;
         draw_other_players state.coords;
         draw_player (state.player.coord) (state.player.angle);

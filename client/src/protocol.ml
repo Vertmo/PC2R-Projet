@@ -65,11 +65,11 @@ let scores_of_string s =
 (** Commands from Server to Client *)
 type servercmd =
   (* Partie A *)
-  | Welcome of phase * scores * coord * coord list
+  | Welcome of phase * scores * coord list * coord list
   | Denied
   | NewPlayer of string
   | PlayerLeft of string
-  | Session of (string * coord) list * coord * coord list
+  | Session of (string * coord) list * coord list * coord list
   | Winner of scores
   | Tick of (string * coord * coord * float) list
   | NewObj of coord * scores
@@ -81,13 +81,13 @@ let servercmd_of_string s =
   match (List.hd parts) with
   | "WELCOME" -> Welcome (phase_of_string (List.nth parts 1),
                           scores_of_string (List.nth parts 2),
-                          coord_of_string (List.nth parts 3),
+                          coords_of_string (List.nth parts 3),
                           coords_of_string (List.nth parts 4))
   | "DENIED" -> Denied
   | "NEWPLAYER" -> NewPlayer (List.nth parts 1)
   | "PLAYERLEFT" -> PlayerLeft (List.nth parts 1)
   | "SESSION" -> Session (player_coords_of_string (List.nth parts 1),
-                          coord_of_string (List.nth parts 2),
+                          coords_of_string (List.nth parts 2),
                           coords_of_string (List.nth parts 3))
   | "WINNER" -> Winner (scores_of_string (List.nth parts 1))
   | "TICK" -> Tick (vcoords_of_string (List.nth parts 1))
@@ -97,11 +97,12 @@ let servercmd_of_string s =
 
 (** Execute a server command *)
 let execute_command = function
-  | Welcome (phase, scores, objCoord, obsCoords) -> (
+  | Welcome (phase, scores, objCoords, obsCoords) -> (
       Mutex.lock stateMut;
       state.phase <- phase;
       state.scores <- scores;
-      state.objCoord <- objCoord;
+      state.player.score <- snd (List.find (fun (u, _) -> u = state.player.username) scores);
+      state.objCoords <- objCoords;
       state.obsCoords <- obsCoords;
       Mutex.unlock stateMut;
       Interface.display_welcome ()
@@ -109,13 +110,15 @@ let execute_command = function
   | Denied -> print_endline "The connection was denied"; exit 1
   | NewPlayer u -> print_endline (Printf.sprintf "Player %s just connected" u)
   | PlayerLeft u -> print_endline (Printf.sprintf "Player %s just left" u)
-  | Session (coords, objCoord, obsCoords) -> (
+  | Session (coords, objCoords, obsCoords) -> (
       Mutex.lock stateMut;
       state.phase <- Jeu;
       state.coords <- List.map (fun (u, c) -> (u, c, (0.,0.), 0.)) coords;
       List.iter (fun (u, coord) -> if (u = state.player.username) then state.player.coord <- coord) coords;
-      state.objCoord <- objCoord;
+      state.objCoords <- objCoords;
       state.obsCoords <- obsCoords;
+      state.player.score <- 0;
+      state.player.speed <- (0., 0.);
       Mutex.unlock stateMut;
     )
   | Tick coords -> (
@@ -126,16 +129,18 @@ let execute_command = function
       (* send (NewPos state.player.coord) *) (* Answer, partie A *)
       Mutex.unlock stateMut
     )
-  | NewObj (coord, scores) -> (
+  | NewObj (_, scores) -> (
       Mutex.lock stateMut;
-      state.objCoord <- coord;
+      (* state.objCoords <- [coord]; *)
       state.scores <- scores;
+      state.player.score <- snd (List.find (fun (u, _) -> u = state.player.username) scores);
       Mutex.unlock stateMut;
       Interface.display_scores state.scores
     )
   | Winner scores -> (
       Mutex.lock stateMut;
       state.scores <- scores;
+      state.player.score <- snd (List.find (fun (u, _) -> u = state.player.username) scores);
       state.phase <- Attente;
       state.player.speed <- (0., 0.);
       Mutex.unlock stateMut;
