@@ -18,7 +18,7 @@ D'autre part, pour implémenter le client, on a choisi d'utiliser le langage OCa
 \subsection{Utilisation}
 Les dépendances logicielles sont les suivantes:
 \begin{itemize}
-  \item \textbf{java} (le programme a été testé avec la version 11)
+  \item \textbf{java} (le programme a été testé avec les versions 10 et 11)
   \item \textbf{apache ant}
   \item \textbf{OCaml v4.06.1} et \textbf{opam}
   \item \textbf{dune}: peut être installé avec \textbf{opam install dune}
@@ -82,5 +82,14 @@ $$NEWCOMPOS/coord/comms/$$
 avec $coord$ et $comms$ telles que définies dans le sujet.\\
 A la reception de cette commande, le serveur met à jour les informations (vitesse et angle) du joueur, comme il le ferait pour la commande $NEWCOM$. Puis, le serveur vérifie si les coordonnées reçues sont suffisemment proche de celles qu'il avait calculé préalablement (ici on a pris comme distance maximale une quinzaine de pixels). Si c'est le cas, il accepte les coordonnées calculées par le client.\\
 On voit en jouant que cette extension permet bien de réduire les ``téléportations'' du véhicule. Cependant, celles-ci se manifestent encore quand le véhicule se déplace à grand vitesse (puisque les écarts entre les calculs du client et du serveur sont alors potentiellement plus importants). On pourrait absorber ses écarts en augmentant la distance maximale autorisée, ou bien en faisant de cette distance une fonction croissante de la vitesse du véhicule. Cependant, si on suivait cette dernière piste, le client pourrait alors tricher en communiquant une vitesse très importante (ce qui augmenterait l'écart maximal accepté par le serveur), puis en communiquant les coordonnées de l'objectif. On choisit donc de conserver le compromis actuel.
+
+\subsection{Jeu de course}
+Pour implémenter le jeu de course, ou plusieurs objectifs sont présents à la fois à l'écran et doivent être traversé dans l'ordre, on modifie les commandes $WELCOME$ et $SESSION$ de la manière suivante:
+$$WELCOME/phase/scores/coords/coords/$$
+$$SESSION/coords/coords/coords/$$
+Où, dans les deux cas, le nouveau $coords$ contient maintenant la liste des coordonnées des objectifs. On remarque qu'à priori un client non étendu sera compatible avec ces instructions si le nombre de coordonnées de la liste est 1.\\
+Par souci d'économies on réutilise $win\_cap$ (qui est ici réglé à 5) pour donner le nombre d'objectifs. Les joueurs devront donc passer les 5 objectifs pour gagner la course. Pour détecter la progression d'un joueur, le serveur ne compare sa position qu'avec le prochain objectif qu'il doit traverser (le numéro du prochain objectif à traverser est égal au score du joueur).\\
+Du coté client, on prends en compte ces changements en affichant l'ensemble des objectifs (avec un numéro et une décoration supplémentaire sur l'objectif actuel pour aider le joueur à se repérer). De plus, on arrête de prendre en compte la commande $NEWOBJ$ (a part pour mettre à jour les scores) puisqu'elle n'a plus vraiment de sens. On remarque tout de même que comme on n'a pas modifié cette instruction côté serveur, on pourrait la aussi utiliser des clients non mis à jour avec.\\
+Un serveur sans cette extension peut sans problème être utilisé avec un client utilisant l'extension (le client ne verra alors qu'un seul objectif). Comme on l'a vu, dans le sens contraire, les clients sans cette extension peuvent être utilisé avec un serveur étendu, mais seulement si le nombre d'objectifs $win\_cap = 1$.
 
 \end{document}
