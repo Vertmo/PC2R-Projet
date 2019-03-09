@@ -66,7 +66,8 @@ let fill_poly_tor shape =
 (** Draw the player vehicle (the angle is in radians) *)
 let draw_player (x, y) theta =
   let shape = [|(20,0);(-20,-10);(-16,0);(-20,10)|] in
-  set_color (rgb 0 255 255);
+  if state.player.stunTime > 0. then set_color (rgb 0 127 127)
+  else set_color (rgb 0 255 255);
   let realshape = (Array.map
                      (fun (x',y') ->
                         let xf = (float_of_int x')+.x and yf = (float_of_int y')+.y in
@@ -150,10 +151,12 @@ let input_thread terminator =
   try
     while true do
       let c = read_key () in
-      if (c = 'w') then thrust ()
-      else if (c = 'd') then clock ()
-      else if (c = 'a') then anticlock ()
-      else if (c = 'e') then shoot ()
+      if not (state.player.stunTime > 0.) then (
+        if (c = 'w') then thrust ()
+        else if (c = 'd') then clock ()
+        else if (c = 'a') then anticlock ()
+        else if (c = 'e') then shoot ()
+      )
     done
   (* The graphic window was closed **)
   with Graphic_failure _ -> terminator ()

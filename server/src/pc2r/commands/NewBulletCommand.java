@@ -1,6 +1,7 @@
 package pc2r.commands;
 
 import pc2r.game.GameState;
+import pc2r.game.Player;
 import pc2r.game.Coord;
 import pc2r.game.Bullet;
 import pc2r.server.Client;
@@ -19,6 +20,9 @@ public class NewBulletCommand extends ClientCommand {
 
     @Override
     public void execute() {
-        state.getBullets().add(new Bullet(coord, speed, angle));
+        Player p = state.getPlayer(c);
+        if(!p.isStunned()) {
+            state.getBullets().add(new Bullet(coord, speed, angle));
+        }
     }
 }

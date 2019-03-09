@@ -18,12 +18,14 @@ public class NewComCommand extends ClientCommand {
     @Override
     public void execute() {
         Player p = state.getPlayer(c);
-        p.getLock().lock();
-        p.setAngle((p.getAngle()+angle+2*Math.PI) % (2*Math.PI));
-        Coord speed = p.getSpeed();
-        speed.setX(speed.getX()+(double)nbThrust*Math.cos(p.getAngle()));
-        speed.setY(speed.getY()+(double)nbThrust*Math.sin(p.getAngle()));
-        p.getLock().unlock();
+        if(!p.isStunned()) {
+            p.getLock().lock();
+            p.setAngle((p.getAngle()+angle+2*Math.PI) % (2*Math.PI));
+            Coord speed = p.getSpeed();
+            speed.setX(speed.getX()+(double)nbThrust*Math.cos(p.getAngle()));
+            speed.setY(speed.getY()+(double)nbThrust*Math.sin(p.getAngle()));
+            p.getLock().unlock();
+        }
 
         // Send a response
         TickCommand t = new TickCommand(state.getCoords(), state.getSpeeds(), state.getAngles());

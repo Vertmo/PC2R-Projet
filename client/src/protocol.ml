@@ -27,7 +27,7 @@ let player_coords_of_string s =
 (** Parse set of v-coordinates for several players *)
 let vcoords_of_string s =
   let parts = String.split_on_char '|' s in
-  let r = Str.regexp "\\([a-zA-Z0-9]+\\):X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)T\\(-?[0-9.]+\\)" in
+  let r = Str.regexp "\\([a-zA-Z0-9]+\\):X\\([-0-9.E]+\\)Y\\([-0-9.E]+\\)VX\\([-0-9.E]+\\)VY\\([-0-9.E]+\\)A\\([-0-9.E]+\\)" in
   List.map (fun s ->
       if (not (Str.string_match r s 0)) then invalid_arg (Printf.sprintf "vcoords_of_string: %s" s);
       ((Str.matched_group 1 s),
@@ -39,7 +39,7 @@ let vcoords_of_string s =
 let bulletvcoords_of_string s =
   if s = "" then [] else (
     let parts = String.split_on_char '|' s in
-    let r = Str.regexp "X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)A\\(-?[0-9.]+\\)" in
+    let r = Str.regexp "X\\([-0-9.E]+\\)Y\\([-0-9.E]+\\)VX\\([-0-9.E]+\\)VY\\([-0-9.E]+\\)A\\([-0-9.E]+\\)" in
     List.map (fun s ->
         if (not (Str.string_match r s 0)) then invalid_arg (Printf.sprintf "bulletvcoords_of_string: %s" s);
         ((float_of_string (Str.matched_group 1 s), float_of_string (Str.matched_group 2 s)),
@@ -79,6 +79,7 @@ let scores_of_string s =
 
 (** Commands from Server to Client *)
 type servercmd =
+  | Unknown
   (* Partie A *)
   | Welcome of phase * scores * coord list * coord list
   | Denied
@@ -112,7 +113,7 @@ let servercmd_of_string s =
                         (scores_of_string (List.nth parts 2)))
   | "BULLETTICK" -> BulletTick (bulletvcoords_of_string (List.nth parts 1))
   | "STUN" -> Stun (float_of_string (List.nth parts 1))
-  | _ -> failwith "Unknown command"
+  | _ -> Unknown
 
 (** Execute a server command *)
 let execute_command = function
@@ -172,4 +173,9 @@ let execute_command = function
       state.bullets <- b;
       Mutex.unlock stateMut
     )
-  | _ -> failwith "Server command not yet implemented"
+  | Stun f -> (
+      Mutex.lock stateMut;
+      state.player.stunTime <- f;
+      Mutex.unlock stateMut
+    )
+  | Unknown -> failwith "Unknown command"

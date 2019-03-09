@@ -1,10 +1,14 @@
 package pc2r.game;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import pc2r.server.Client;
 import pc2r.commands.SessionCommand;
 import pc2r.commands.TickCommand;
 import pc2r.commands.NewObjCommand;
 import pc2r.commands.WinnerCommand;
+import pc2r.commands.StunCommand;
 
 /**
  * Thread that runs the actual game
@@ -21,6 +25,7 @@ public class Game extends Thread {
     public static final double ve_radius = 10;
     public static final double objective_radius = 10;
     public static final double obs_radius = 10;
+    public static final double bullet_radius = 4;
 
     private GameState state;
 
@@ -67,10 +72,11 @@ public class Game extends Thread {
                 //     c.send(tc.toString());
                 // }
 
-                // Update player coords and check for collision
+                // Update player coords and check for collision, also update stunTime
                 for(Player p: state.getPlayers().values()) {
                     p.updateCoord();
                     p.handleCollisions(state.getObsCoords());
+                    if(p.isStunned()) p.decreaseStunnedTime(1000/server_refresh_tickrate);
                 }
 
                 // Detect collisions with relevant objective for the player
@@ -99,15 +105,44 @@ public class Game extends Thread {
 
                 // Extension: jeu de combat
 
-                // Update bullet coords and check if they collide with an obstacle
+                // Update bullet coords
                 for(Bullet b: state.getBullets()) {
                     b.updateCoord();
-                    b.handleCollisions(state.getObsCoords());
                 }
 
-                // Extension: jeu de combat
+                // Detect bullets collision with an obstacle
+                List<Bullet> newBullets = new ArrayList<>(state.getBullets());
+                for(Bullet b: state.getBullets()) {
+                    double x = b.getCoord().getX(); double y = b.getCoord().getY();
+                    for(Coord obsC: state.getObsCoords()) {
+                        double ox = obsC.getX(); double oy = obsC.getY();
+                        if((x-ox)*(x-ox)+(y-oy)*(y-oy) < (obs_radius+bullet_radius)*(obs_radius+bullet_radius)) {
+                            newBullets.remove(b);
+                            break;
+                        }
+                    }
+                }
+                state.setBullets(newBullets);
+
                 // Detect bullets collision with a player
-                // TODO
+                newBullets = new ArrayList<>(state.getBullets());
+                for(Bullet b: state.getBullets()) {
+                    if(b.isGhost()) b.decreaseGhostTime(1000/server_refresh_tickrate);
+                    else {
+                        double x = b.getCoord().getX(); double y = b.getCoord().getY();
+                        for(Client c: state.getPlayers().keySet()) {
+                            Player p = state.getPlayers().get(c);
+                            double px = p.getCoord().getX(); double py = p.getCoord().getY();
+                            if((x-px)*(x-px)+(y-py)*(y-py) < (ve_radius+bullet_radius)*(ve_radius+bullet_radius)) {
+                                p.stun(2000.); // A l'arret pour 2 secondes
+                                c.send(new StunCommand(2000.).toString());
+                                newBullets.remove(b);
+                                break;
+                            }
+                        }
+                    }
+                }
+                state.setBullets(newBullets);
 
                 try {
                     Thread.sleep(1000/server_refresh_tickrate);

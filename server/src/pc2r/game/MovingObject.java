@@ -26,9 +26,4 @@ public abstract class MovingObject {
         coord.setX((coord.getX()+speed.getX()+3*Game.w)%(2*Game.w)-Game.w);
         coord.setY((coord.getY()+speed.getY()+3*Game.h)%(2*Game.h)-Game.h);
     }
-
-    /**
-     * Handle collisions with a set of obstacles
-     */
-    public abstract void handleCollisions(List<Coord> obstacleCoords);
 }

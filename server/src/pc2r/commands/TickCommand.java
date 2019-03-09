@@ -21,7 +21,7 @@ public class TickCommand extends ServerCommand {
         for(String username: coords.keySet()) {
             coordsS += "|" + username + ":" + coords.get(username).toString();
             coordsS += "VX" + speeds.get(username).getX() + "VY" + speeds.get(username).getY();
-            coordsS += "T" + angles.get(username);
+            coordsS += "A" + angles.get(username);
         }
         return "TICK/" + coordsS.substring(1, coordsS.length()) + "/";
     }

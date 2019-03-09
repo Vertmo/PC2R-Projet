@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Player extends MovingObject {
     private String username;
     private int score;
+    private double stunnedTime;
     private Lock lock;
 
     public Player(String username) {
@@ -19,6 +20,7 @@ public class Player extends MovingObject {
         speed = new Coord();
         this.username = username;
         score = 0;
+        stunnedTime = 0;
         lock = new ReentrantLock();
     }
 
@@ -36,7 +38,25 @@ public class Player extends MovingObject {
      */
     public void incScore() { score++; }
 
+    public boolean isStunned() { return stunnedTime > 0; }
+
+    /**
+     * Stun the player for a given duration
+     */
+    public synchronized void stun(double time) {
+        speed = new Coord(0, 0);
+        stunnedTime = time;
+    }
+
+    public synchronized void decreaseStunnedTime(double time) {
+        stunnedTime -= time;
+    }
+
     @Override
+    public synchronized void updateCoord() {
+        if(!isStunned()) super.updateCoord();
+    }
+
     public synchronized void handleCollisions(List<Coord> obstacleCoords) {
         double x = coord.getX(); double y = coord.getY();
         for(Coord obsC: obstacleCoords) {

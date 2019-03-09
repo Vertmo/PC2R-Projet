@@ -116,5 +116,8 @@ let anticlock () =
 let shoot () =
   Mutex.lock stateMut;
   let (x, y) = state.player.coord and a = state.player.angle in
-  shootCom := Some ((x,y), (10. *. (cos a), 10. *. (sin a)), a);
+  let b = ((x, y),
+           (5. *. (cos a), 5. *. (sin a)), a) in
+  state.bullets <- b::state.bullets;
+  shootCom := Some b;
   Mutex.unlock stateMut

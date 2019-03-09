@@ -40,6 +40,8 @@ public class GameState {
     public List<Coord> getObsCoords() { return obsCoords; }
     public List<Bullet> getBullets() { return bullets; }
 
+    public void setBullets(List<Bullet> bullets) { this.bullets = bullets; }
+
     /**
      * Check if there is a player with the same username, and add a new player if not
      * @returns true if the player was added (there was no player with the same name), false otherwise

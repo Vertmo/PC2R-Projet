@@ -35,6 +35,13 @@ let main addr port username =
 
   while true do
     Game.move (); (* We leave that in in partie B to 'predict' the position of the player *)
+
+    (* Decrease stun time *)
+    Mutex.lock (Game.stateMut);
+    if(Game.state.player.stunTime > 0.)
+    then (Game.state.player.stunTime <- Game.state.player.stunTime -. (1000./.(float_of_int refresh_tickrate)));
+    Mutex.unlock (Game.stateMut);
+
     try (* Incoming signals could interrupt this and break everything *)
       Thread.delay (1./.(float_of_int refresh_tickrate));
     with Unix.Unix_error _ -> ()
