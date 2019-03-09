@@ -92,4 +92,15 @@ Par souci d'économies on réutilise $win\_cap$ (qui est ici réglé à 5) pour 
 Du coté client, on prends en compte ces changements en affichant l'ensemble des objectifs (avec un numéro et une décoration supplémentaire sur l'objectif actuel pour aider le joueur à se repérer). De plus, on arrête de prendre en compte la commande $NEWOBJ$ (a part pour mettre à jour les scores) puisqu'elle n'a plus vraiment de sens. On remarque tout de même que comme on n'a pas modifié cette instruction côté serveur, on pourrait la aussi utiliser des clients non mis à jour avec.\\
 Un serveur sans cette extension peut sans problème être utilisé avec un client utilisant l'extension (le client ne verra alors qu'un seul objectif). Comme on l'a vu, dans le sens contraire, les clients sans cette extension peuvent être utilisé avec un serveur étendu, mais seulement si le nombre d'objectifs $win\_cap = 1$.
 
+\subsection{Jeu de combat}
+Dernière extension implémentée, on décide de donner des armes destructrices à nos joueurs ! Leur fonctionnement est le suivant : le joueur peut tirer en appuyant sur la touche \textbf{e}. Un laser part alors en ligne droite, dans la direction pointées par le véhicule du joueur au moment du tir. Le joueur peut tirer autant de laser qu'il veut, mais il y a un piège: les lasers prennent en compte la forme torique de l'arène, et peuvent en plus toucher leur tireur: il est donc risquer d'``arroser'' de lasers, puisqu'on risque de se toucher soit même. Les lasers continuent donc d'avancer à l'infini, jusqu'à rencontrer un obstacle (auquel cas ils disparaissent) ou un joueur: dans ce second cas, le joueur est stoppé et est incapacité pendant 2 secondes (le serveur ne réagit plus à ses commandes).\\
+Afin d'implémenter cette extension, on a ajouté trois nouvelles commandes au protocoles. La première est une commande Client $\rightarrow$ Serveur qui permet d'enregistrer un nouveau tir:
+$$NEWBULLET/coord/speed/angle/$$
+Cette commande est envoyée en même temps que les commandes $NEWPOSCOM$ de l'extension précédante, c'est à dire tous les $server\_tickrate$. Le client ne peut donc tirer qu'un laser par $server\_tickrate$, ce qui limite un peu le chaos de la partie.\\
+D'autre part, on ajoute les deux commandes Serveur $\rightarrow$ Client suivantes:
+$$BULLETTICK/vcoords/$$
+$$STUN/time/$$
+$BULLETTICK$ met à jour les positions des lasers chez les clients (principalement pour affichage). D'autre parts, la commande $STUN$ informe le client qu'il a été touché par un laser, et sera donc incapacité pendant $TIME$ millisecondes ($TIME$ est un flottant).\\
+Comme on le constate en jouant, les lasers montrent un peu de ``lag'' durant leur déplacement: c'est bien sur dù à la différence entre le $server\_tickrate$ et le $refresh\_tickrate$ qui rend la prédiction imparfaite. On ne peut malheureusement pas régler ce problème comme on l'avait fait dans l'extension \textit{Calcul coté client et vérification}, puisque c'est le serveur qui gère les déplacement des lasers.
+
 \end{document}
