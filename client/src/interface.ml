@@ -93,6 +93,16 @@ let draw_other_players coords =
         fill_poly_tor realshape)
     coords
 
+(** Draw the bullets *)
+let draw_bullets bullets =
+  set_color red;
+  set_line_width 3;
+  List.iter (fun ((x, y), _, a) ->
+      moveto ((int_of_float x)+w) ((int_of_float y)+h);
+      lineto ((int_of_float x)+(int_of_float (20. *. cos a))+w)
+        ((int_of_float y)+(int_of_float (20. *. sin a))+h)
+    ) bullets
+
 (** Draw an objective *)
 let draw_objective i (x, y) =
   if (i = state.player.score) then (
@@ -124,6 +134,7 @@ let graph_thread (refresh_tickrate, terminator) =
         List.iteri draw_objective state.objCoords;
         draw_obstacles state.obsCoords;
         draw_other_players state.coords;
+        draw_bullets state.bullets;
         draw_player (state.player.coord) (state.player.angle);
       );
       synchronize ();
@@ -142,6 +153,7 @@ let input_thread terminator =
       if (c = 'w') then thrust ()
       else if (c = 'd') then clock ()
       else if (c = 'a') then anticlock ()
+      else if (c = 'e') then shoot ()
     done
   (* The graphic window was closed **)
   with Graphic_failure _ -> terminator ()

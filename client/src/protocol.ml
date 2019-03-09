@@ -35,6 +35,18 @@ let vcoords_of_string s =
        (float_of_string (Str.matched_group 4 s), float_of_string (Str.matched_group 5 s)),
        float_of_string (Str.matched_group 6 s))) parts
 
+(** Parse set of v-coordinates for several bullets *)
+let bulletvcoords_of_string s =
+  if s = "" then [] else (
+    let parts = String.split_on_char '|' s in
+    let r = Str.regexp "X\\(-?[0-9.]+\\)Y\\(-?[0-9.]+\\)VX\\(-?[0-9.]+\\)VY\\(-?[0-9.]+\\)A\\(-?[0-9.]+\\)" in
+    List.map (fun s ->
+        if (not (Str.string_match r s 0)) then invalid_arg (Printf.sprintf "bulletvcoords_of_string: %s" s);
+        ((float_of_string (Str.matched_group 1 s), float_of_string (Str.matched_group 2 s)),
+         (float_of_string (Str.matched_group 3 s), float_of_string (Str.matched_group 4 s)),
+         float_of_string (Str.matched_group 5 s))) parts
+  )
+
 (** Commands from Client to Server *)
 type clientcmd =
   (* Partie A *)
@@ -45,14 +57,17 @@ type clientcmd =
   | NewCom of float * int
   (* Extension : calcul coté client *)
   | NewPosCom of (float * float) * float * int
+  (* Extension: jeu de combat *)
+  | NewBullet of coord * coord * float
 
 (** Translate a client command to a string, to send it to the server *)
 let string_of_clientcmd = function
   | Connect u -> Printf.sprintf "CONNECT/%s/" u
   | Exit u -> Printf.sprintf "EXIT/%s/" u
   | NewPos (x, y) -> Printf.sprintf "NEWPOS/X%fY%f/" x y
-  | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d" angle thrust
-  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%f/A%fT%d" x y angle thrust
+  | NewCom (angle, thrust) -> Printf.sprintf "NEWCOM/A%fT%d/" angle thrust
+  | NewPosCom ((x, y), angle, thrust) -> Printf.sprintf "NEWPOSCOM/X%fY%f/A%fT%d/" x y angle thrust
+  | NewBullet ((x, y), (vx, vy), angle) -> Printf.sprintf "NEWBULLET/X%fY%f/VX%fVY%f/A%f/" x y vx vy angle
 
 (** Liste de scores *)
 type scores = (string * int) list
@@ -73,7 +88,9 @@ type servercmd =
   | Winner of scores
   | Tick of (string * coord * coord * float) list
   | NewObj of coord * scores
-  (* Partie B *)
+  (* Extension: jeu de combat *)
+  | BulletTick of (coord * coord * float) list
+  | Stun of float
 
 (** Parses a string to a server command *)
 let servercmd_of_string s =
@@ -93,6 +110,8 @@ let servercmd_of_string s =
   | "TICK" -> Tick (vcoords_of_string (List.nth parts 1))
   | "NEWOBJ" -> NewObj ((coord_of_string (List.nth parts 1)),
                         (scores_of_string (List.nth parts 2)))
+  | "BULLETTICK" -> BulletTick (bulletvcoords_of_string (List.nth parts 1))
+  | "STUN" -> Stun (float_of_string (List.nth parts 1))
   | _ -> failwith "Unknown command"
 
 (** Execute a server command *)
@@ -119,6 +138,7 @@ let execute_command = function
       state.obsCoords <- obsCoords;
       state.player.score <- 0;
       state.player.speed <- (0., 0.);
+      state.bullets <- [];
       Mutex.unlock stateMut;
     )
   | Tick coords -> (
@@ -146,3 +166,10 @@ let execute_command = function
       Mutex.unlock stateMut;
       Interface.display_winner ()
     )
+  (* Extension: jeu de combat *)
+  | BulletTick b -> (
+      Mutex.lock stateMut;
+      state.bullets <- b;
+      Mutex.unlock stateMut
+    )
+  | _ -> failwith "Server command not yet implemented"

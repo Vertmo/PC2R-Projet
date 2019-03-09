@@ -19,6 +19,7 @@ public class GameState {
     private Phase phase;
     private List<Coord> objCoords;
     private List<Coord> obsCoords;
+    private List<Bullet> bullets;
 
     private Lock lHasPlayers; private Condition hasPlayers;
 
@@ -28,6 +29,7 @@ public class GameState {
         lHasPlayers = new ReentrantLock(); hasPlayers = lHasPlayers.newCondition();
         objCoords = new ArrayList<>();
         obsCoords = new ArrayList<>();
+        bullets = new ArrayList<>();
     }
 
     public Phase getPhase() { return phase; }
@@ -36,6 +38,7 @@ public class GameState {
     public int getNbPlayers() { return players.size(); }
     public List<Coord> getObjCoords() { return objCoords; }
     public List<Coord> getObsCoords() { return obsCoords; }
+    public List<Bullet> getBullets() { return bullets; }
 
     /**
      * Check if there is a player with the same username, and add a new player if not
@@ -141,6 +144,9 @@ public class GameState {
             p.setSpeed(new Coord());
             p.resetScore();
         }
+
+        // Erase bullets
+        bullets.clear();
     }
 
     /**

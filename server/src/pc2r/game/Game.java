@@ -37,7 +37,7 @@ public class Game extends Thread {
 
             // Wait in the room 10 seconds
             try {
-                Thread.sleep(1 * 1000);
+                Thread.sleep(1 * 1000); // TEMP
             } catch(InterruptedException e) {}
             if(state.getNbPlayers() < 1) {
                 System.out.println("All the players have left :(");
@@ -67,26 +67,10 @@ public class Game extends Thread {
                 //     c.send(tc.toString());
                 // }
 
-                // Update coordinates according to speed and angle
+                // Update player coords and check for collision
                 for(Player p: state.getPlayers().values()) {
-                    p.getLock().lock();
-                    Coord coord = p.getCoord();
-                    Coord speed = p.getSpeed();
-                    coord.setX((coord.getX()+speed.getX()+3*Game.w)%(2*Game.w)-Game.w);
-                    coord.setY((coord.getY()+speed.getY()+3*Game.h)%(2*Game.h)-Game.h);
-
-                    // Check if we've collided with an obstacle
-                    double x = coord.getX(); double y = coord.getY();
-                    for(Coord obsC: state.getObsCoords()) {
-                        double ox = obsC.getX(); double oy = obsC.getY();
-                        if((x-ox)*(x-ox)+(y-oy)*(y-oy) < (ve_radius+obs_radius)*(ve_radius+obs_radius)) {
-                            // Only go away from the obstacle (avoid getting stuck inside)
-                            if((x-ox)*speed.getX() < 0) speed.setX(-speed.getX());
-                            if((y-oy)*speed.getY() < 0)speed.setY(-speed.getY());
-                            break;
-                        }
-                    }
-                    p.getLock().unlock();
+                    p.updateCoord();
+                    p.handleCollisions(state.getObsCoords());
                 }
 
                 // Detect collisions with relevant objective for the player
@@ -112,6 +96,18 @@ public class Game extends Thread {
                         break;
                     }
                 }
+
+                // Extension: jeu de combat
+
+                // Update bullet coords and check if they collide with an obstacle
+                for(Bullet b: state.getBullets()) {
+                    b.updateCoord();
+                    b.handleCollisions(state.getObsCoords());
+                }
+
+                // Extension: jeu de combat
+                // Detect bullets collision with a player
+                // TODO
 
                 try {
                     Thread.sleep(1000/server_refresh_tickrate);

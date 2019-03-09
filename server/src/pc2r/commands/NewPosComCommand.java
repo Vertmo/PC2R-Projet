@@ -38,5 +38,7 @@ public class NewPosComCommand extends ClientCommand {
         // Send a response
         TickCommand t = new TickCommand(state.getCoords(), state.getSpeeds(), state.getAngles());
         c.send(t.toString());
+        BulletTickCommand bt = new BulletTickCommand(state.getBullets());
+        c.send(bt.toString());
     }
 }

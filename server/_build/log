@@ -1,0 +1,4 @@
+# dune build src/pc2rClient.exe
+# OCAMLPARAM: unset
+$ /usr/bin/nproc > /tmp/dune6d67c7.output 2> /dev/null
+$ /home/vertmo/.opam/4.06.1/bin/ocamlc.opt -config > /tmp/dune5fade3.output

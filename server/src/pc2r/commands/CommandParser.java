@@ -43,7 +43,17 @@ public class CommandParser {
                 int nbt = Integer.parseInt(parts2[1]);
                 return new NewPosComCommand(state, c, x, y, a, nbt);
 
+            } else if (parts[0].equals("NEWBULLET")) {
+                String[] parts1 = parts[1].split("Y");
+                String[] parts2 = parts[2].split("VY");
+                double x = Double.parseDouble(parts1[0].substring(1, parts1[0].length()));
+                double y = Double.parseDouble(parts1[1]);
+                double vx = Double.parseDouble(parts2[0].substring(2, parts2[0].length()));
+                double vy = Double.parseDouble(parts2[1]);
+                double a = Double.parseDouble(parts[3].substring(1, parts[3].length()));
+                return new NewBulletCommand(state, c, x, y, vx, vy, a);
+
             } else throw new CommandParseException(s, "name of the command not recognized");
-        } catch (Exception e) { throw new CommandParseException(s, e.getMessage()); }
+        } catch (Exception e) { throw new CommandParseException(s, e.toString()); }
     }
 }

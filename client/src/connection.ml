@@ -26,6 +26,11 @@ let send_commands s =
     let (angle, thrust) = !Game.newCom in
     send s (NewPosCom (Game.state.player.coord, angle, thrust));
     Game.newCom := (0., 0);
+
+    (* Extension: jeu de combat *)
+    (match !Game.shootCom with
+     | Some (coord, speed, a) -> send s (NewBullet (coord, speed, a)); Game.shootCom := None
+     | None -> ());
     Thread.delay (1./.(float_of_int server_tickrate));
   done
 

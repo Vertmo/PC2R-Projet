@@ -24,11 +24,13 @@ type playerState = {
   mutable speed: coord;
   mutable angle: float;
   mutable score: int;
+  mutable stunTime: float;
 }
 
 (** State of the whole game *)
 type gameState = {
   mutable coords: (string * coord * coord * float) list;
+  mutable bullets: (coord * coord * float) list;
   mutable scores: (string * int) list;
   mutable phase: phase;
   mutable objCoords: coord list;
@@ -38,6 +40,7 @@ type gameState = {
 
 let state = {
   coords = [];
+  bullets = [];
   scores = [];
   phase = Attente;
   objCoords = [];
@@ -48,14 +51,16 @@ let state = {
     speed = (0., 0.);
     angle = 0.; (* The angle is in radians ! *)
     score = 0;
+    stunTime = 0.;
   }
 }
 
 let stateMut = Mutex.create ()
 
 let newCom = ref (0., 0)
+let shootCom: (coord * coord * float) option ref = ref None
 
-(** Move the vehicle *)
+(** Move the vehicle, other vehicles and bullets *)
 let move () =
   Mutex.lock stateMut;
   let (x, y) = state.player.coord and (vx, vy) = state.player.speed in
@@ -65,6 +70,11 @@ let move () =
       mod_float (x+.vx) (float_of_int (2*w)),
       mod_float (y+.vy) (float_of_int (2*h))
     ), (vx, vy), a)) state.coords;
+
+  state.bullets <- List.map (fun ((x, y), (vx, vy), a) -> ((
+      mod_float (x+.vx) (float_of_int (2*w)),
+      mod_float (y+.vy) (float_of_int (2*h))
+    ), (vx, vy), a)) state.bullets;
   Mutex.unlock stateMut
 
 (** Augment speed of the vehicle *)
@@ -100,4 +110,11 @@ let anticlock () =
   (* Partie B *)
   let (angle, thrust) = !newCom in
   newCom := (angle +. thrustit, thrust);
+  Mutex.unlock stateMut
+
+(** Shoot a bullet *)
+let shoot () =
+  Mutex.lock stateMut;
+  let (x, y) = state.player.coord and a = state.player.angle in
+  shootCom := Some ((x,y), (10. *. (cos a), 10. *. (sin a)), a);
   Mutex.unlock stateMut
