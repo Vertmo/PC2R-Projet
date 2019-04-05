@@ -24,6 +24,14 @@ public class NewComCommand extends ClientCommand {
             Coord speed = p.getSpeed();
             speed.setX(speed.getX()+(double)nbThrust*Math.cos(p.getAngle()));
             speed.setY(speed.getY()+(double)nbThrust*Math.sin(p.getAngle()));
+
+            double maxSpeed = 10;
+            double speedL = Math.sqrt(speed.getX()*speed.getX()+speed.getY()*speed.getY());
+            if(speedL > maxSpeed) {
+                speed.setX(speed.getX()*maxSpeed/speedL);
+                speed.setY(speed.getY()*maxSpeed/speedL);
+            }
+
             p.getLock().unlock();
         }
 

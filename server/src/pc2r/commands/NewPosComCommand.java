@@ -27,10 +27,17 @@ public class NewPosComCommand extends ClientCommand {
             speed.setX(speed.getX()+(double)nbThrust*Math.cos(p.getAngle()));
             speed.setY(speed.getY()+(double)nbThrust*Math.sin(p.getAngle()));
 
+            double maxSpeed = 10;
+            double speedL = Math.sqrt(speed.getX()*speed.getX()+speed.getY()*speed.getY());
+            if(speedL > maxSpeed) {
+                speed.setX(speed.getX()*maxSpeed/speedL);
+                speed.setY(speed.getY()*maxSpeed/speedL);
+            }
+
             // If the coordinates are not too far away, trust the client
             double rx = p.getCoord().getX(); double ry = p.getCoord().getY();
             double x = coord.getX(); double y = coord.getY();
-            if((rx-x)*(rx-x)+(ry-y)*(ry-y) < 300) {
+            if((rx-x)*(rx-x)+(ry-y)*(ry-y) < 1000) {
                 p.getCoord().setX(x); p.getCoord().setY(y);
             }
 

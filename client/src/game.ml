@@ -85,6 +85,13 @@ let thrust() =
   state.player.speed <- (vx+.thrustit*.(cos theta),
                         vy+.thrustit*.(sin theta));
 
+  let maxSpeed = 10. and (vx, vy) = state.player.speed in
+  let speedL = sqrt((vx*.vx)+.(vy*.vy)) in
+  if speedL > maxSpeed then (
+    state.player.speed <- (vx*.maxSpeed/.speedL,
+                          vy*.maxSpeed/.speedL)
+  );
+
   (* Partie B *)
   let (angle, thrust) = !newCom in
   newCom := (angle, thrust + 1);
